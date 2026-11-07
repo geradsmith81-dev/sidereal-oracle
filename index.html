@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Sidereal Oracle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Sidereal charts on the real constellations, read through William Lilly's Christian Astrology (1647).">
+<meta name="theme-color" content="#0b111c">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sidereal Oracle">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<style>
+  :root { --void:#0b111c; --panel:#111927; --band:#172134; --orbit:#4f6789;
+          --starlight:#f7f1ea; --dust:#c4ccdb; --flame:#f2994a; --peach:#ffcd9c;
+          --primary:#b5461a; --ion:#6fd0dc; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--void); color:var(--starlight);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif; line-height:1.5; }
+  body { min-height:100vh; padding: env(safe-area-inset-top) env(safe-area-inset-right)
+         env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background: radial-gradient(ellipse at 50% 0%, #21304a 0%, var(--void) 70%) fixed; }
+  main { max-width:640px; margin:0 auto; padding:28px 20px 40px; }
+  .hero { text-align:center; }
+  .hero img { width:120px; height:120px; border-radius:26px; box-shadow:0 6px 28px rgba(0,0,0,.5); }
+  h1 { color:var(--peach); font-weight:normal; font-size:1.9rem; margin:16px 0 4px; letter-spacing:.01em; }
+  h2 { color:var(--peach); font-weight:normal; font-size:1.25rem; margin:0 0 8px; }
+  .sub { color:var(--dust); margin:0 0 22px; }
+  a.btn, button.btn { display:block; width:100%; text-align:center; text-decoration:none;
+    background:var(--primary); color:#fff; border:0; border-radius:12px; padding:15px 18px;
+    font:inherit; font-size:1.15rem; cursor:pointer; margin:10px 0; }
+  button.btn.alt { background:transparent; border:1px solid var(--orbit); color:var(--starlight); }
+  .card { background:rgba(17,25,39,.85); border:1px solid #21304a; border-radius:14px;
+    padding:16px 18px; margin:18px 0; }
+  details > summary { cursor:pointer; color:var(--peach); font-size:1.12rem; list-style:none; }
+  details > summary::-webkit-details-marker { display:none; }
+  details > summary::before { content:"\25B8  "; color:var(--flame); }
+  details[open] > summary::before { content:"\25BE  "; }
+  ol { padding-left:1.3em; margin:10px 0 4px; } li { margin:6px 0; }
+  .key { color:var(--ion); white-space:nowrap; }
+  .note { color:var(--dust); font-size:.92rem; }
+  .hidden { display:none !important; }
+  #splash { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; text-align:center; padding:24px; background:var(--void); }
+  #splash img { width:110px; height:110px; border-radius:24px; animation:turn 9s linear infinite; }
+  @keyframes turn { to { transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { #splash img { animation:none; } }
+  #splash p { color:var(--dust); max-width:24em; }
+  footer { color:var(--dust); font-size:.8rem; text-align:center; margin-top:28px; }
+  footer a { color:var(--dust); }
+</style>
+</head>
+<body>
+
+<!-- Shown when opened from the home-screen icon -->
+<div id="splash" class="hidden" aria-live="polite">
+  <img src="icons/apple-touch-icon.png" alt="">
+  <h1>The Sidereal Oracle</h1>
+  <p id="splash-msg">Opening&hellip;</p>
+  <p class="note">If the app has been resting, Streamlit shows a page saying it has gone to sleep:
+     tap its button to wake it. The stars can take up to a minute to return.</p>
+  <a class="btn" id="splash-open" href="#" style="max-width:340px">Open The Sidereal Oracle</a>
+</div>
+
+<!-- Shown in an ordinary browser tab -->
+<main id="page">
+  <div class="hero">
+    <img src="icons/apple-touch-icon.png" alt="The Sidereal Oracle icon: an astrolabe">
+    <h1>The Sidereal Oracle</h1>
+    <p class="sub">Sidereal charts on the real constellations, read through
+       William Lilly&rsquo;s <i>Christian Astrology</i> (1647).</p>
+  </div>
+
+  <a class="btn" id="open-app" href="#">Open The Sidereal Oracle</a>
+  <button class="btn alt hidden" id="install-btn" type="button">Install on this device</button>
+
+  <div class="card">
+    <h2>Put it on your home screen</h2>
+    <p class="note" style="margin-top:0">Add this page to your home screen once. After that, the
+       astrolabe icon opens the Oracle like any other app.</p>
+
+    <details id="ios">
+      <summary>iPhone or iPad</summary>
+      <ol>
+        <li>Open this page in <b>Safari</b>. Chrome on iPhone also works, using its own
+            <span class="key">Share</span> button.</li>
+        <li>Tap <span class="key">Share</span> (the square with an arrow pointing up). On newer
+            iPhones it may be inside the <span class="key">&hellip;</span> menu first.</li>
+        <li>Scroll down and tap <span class="key">Add to Home Screen</span>. If you see a switch
+            called <span class="key">Open as Web App</span>, leave it on.</li>
+        <li>You can change the name if you like, then tap <span class="key">Add</span>.</li>
+      </ol>
+    </details>
+
+    <details id="android">
+      <summary>Android phone or tablet</summary>
+      <ol>
+        <li>Open this page in <b>Chrome</b>. Samsung Internet and Edge also work.</li>
+        <li>Tap the <span class="key">&#8942;</span> menu (three dots, top right).</li>
+        <li>Tap <span class="key">Add to Home screen</span>, then
+            <span class="key">Install</span>. On some phones the menu says
+            <span class="key">Install app</span>.</li>
+        <li>The icon appears on your home screen and in your app list.</li>
+      </ol>
+    </details>
+
+    <details id="desktop">
+      <summary>Computer</summary>
+      <ol>
+        <li>In Chrome or Edge, look for the small <span class="key">Install</span> icon at the
+            right-hand end of the address bar, or use the browser menu &rarr;
+            <span class="key">Install</span> / <span class="key">Apps</span>.</li>
+        <li>Or simply bookmark this page.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="card note">
+    <b style="color:var(--starlight)">Good to know</b>
+    <ul style="padding-left:1.2em;margin:8px 0 0">
+      <li>An internet connection is needed: the charts are calculated online from NASA JPL data.</li>
+      <li>If nobody has used the app for a while, it sleeps. Tap Streamlit&rsquo;s wake-up button
+          and give it up to a minute.</li>
+      <li>Privacy: your profile and birth details stay only in the open app and are cleared when you
+          close it. Save a friend card if you want to keep them. This page uses no cookies and no
+          tracking.</li>
+    </ul>
+  </div>
+
+  <footer>
+    Positions: NASA JPL DE440s &middot; Places: GeoNames (CC BY 4.0) &middot;
+    Background in the app: Lagoon Nebula, NASA, ESA, STScI (CC BY 4.0) &middot;
+    Text: William Lilly, <i>Christian Astrology</i>, London 1647 (public domain).
+  </footer>
+</main>
+
+<script>
+(function () {
+  // ---- The one setting: the address of the Streamlit app. ----
+  var APP_URL = "https://sidereal-lilly-chart-8aevvdj4xjfdczxjz7swbt.streamlit.app/";
+
+  var links = [document.getElementById("open-app"), document.getElementById("splash-open")];
+  links.forEach(function (a) { a.href = APP_URL; });
+
+  var ua = navigator.userAgent || "";
+  var isIOS = /iPhone|iPad|iPod/.test(ua) ||
+              (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/i.test(ua);
+  var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+                   window.navigator.standalone === true;
+
+  // Open the instructions that fit this device.
+  var which = isIOS ? "ios" : (isAndroid ? "android" : "desktop");
+  document.getElementById(which).open = true;
+
+  if (standalone) {
+    // Opened from the home-screen icon: go straight to the app, once per launch.
+    document.getElementById("page").classList.add("hidden");
+    document.getElementById("splash").classList.remove("hidden");
+    var already = false;
+    try { already = sessionStorage.getItem("oracle-opened") === "1"; } catch (e) {}
+    if (!already) {
+      try { sessionStorage.setItem("oracle-opened", "1"); } catch (e) {}
+      setTimeout(function () { window.location.replace(APP_URL); }, 700);
+    } else {
+      document.getElementById("splash-msg").textContent = "Tap below to return to the Oracle.";
+    }
+  }
+
+  // Android / desktop Chrome: offer a one-tap Install button when the browser allows it.
+  var deferred = null, btn = document.getElementById("install-btn");
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); deferred = e; btn.classList.remove("hidden");
+  });
+  btn.addEventListener("click", function () {
+    if (!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.then(function () { deferred = null; btn.classList.add("hidden"); });
+  });
+  window.addEventListener("appinstalled", function () { btn.classList.add("hidden"); });
+
+  // A small offline helper so the launcher itself opens without signal.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>
