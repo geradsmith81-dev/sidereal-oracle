@@ -1,0 +1,174 @@
+DEPLOY GUIDE - putting "Sidereal Oracle - William Lilly's reading" online
+==========================================================================
+
+You need: a free GitHub account and a free Streamlit Community Cloud account.
+Nothing to install. Use Chrome or Edge on your PC (they can upload folders
+by drag and drop). It takes about 20 minutes the first time.
+
+Use the SMALL zip, "SiderealLillyApp_github.zip" (about 0.3 MB). Do not
+upload the desktop zip: it contains the 32 MB NASA file, which is too big
+for GitHub's web page (25 MB per file). The online app fetches that file
+from NASA by itself.
+
+
+PART A. UNZIP THE FILES
+-----------------------
+1. Right-click "SiderealLillyApp_github.zip" > "Extract All..." > "Extract".
+2. Windows opens a folder called  SiderealLillyApp_github . Inside it is a
+   second folder,  sidereal-lilly-chart . Double-click it to go inside.
+3. You should now see 26 items: 4 folders (.streamlit, assets, data, ephem)
+   and 22 files, including app.py and requirements.txt.
+   THIS is the window you will drag from in Part C. Leave it open.
+
+
+PART B. MAKE A GITHUB ACCOUNT AND AN EMPTY "REPOSITORY"
+-------------------------------------------------------
+(A repository is simply an online folder for the app's files.)
+1. Go to github.com and click "Sign up". Follow the steps and confirm your
+   e-mail address. (Skip this if you already have an account.)
+2. Once signed in, click the "+" at the top right > "New repository".
+3. Repository name:  sidereal-oracle
+   Choose "Public". (Lilly's 1647 text is public domain, and the files hold
+   no personal information. Your profile and friends are never uploaded.)
+4. Leave everything else as it is: no README, no .gitignore, no licence.
+   (These are already among the files you will upload.)
+5. Click "Create repository".
+
+
+PART C. UPLOAD THE FILES (the step most often done wrong)
+---------------------------------------------------------
+1. The new, empty repository shows a "Quick setup" box. In it, click the
+   blue link  "uploading an existing file".
+2. Go to the window from Part A (the inside of sidereal-lilly-chart).
+   Click once on an empty spot in it, press Ctrl+A to select all 26 items,
+   then DRAG them onto the GitHub page and let go over the large box
+   "Drag files here to add them to your repository".
+   - Drag the CONTENTS, not the folder sidereal-lilly-chart itself.
+   - Do not use the "choose your files" link: it cannot upload folders.
+3. Wait until the list of files below the box stops growing. It should
+   list 40 files, among them:
+       .streamlit/config.toml
+       assets/background.jpg      assets/background_phone.jpg   assets/lilly_icon.png
+       data/... (13 files ending in .csv)
+       ephem/.gitkeep
+       app.py   requirements.txt   README.md
+   If .streamlit/config.toml is missing, carry on and see "IF THE COLOURS
+   ARE WRONG" at the end.
+4. At the bottom, under "Commit changes", you may type a note such as
+   "First upload". Leave "Commit directly to the main branch" selected and
+   click the green "Commit changes" button. Wait for the page to reload.
+5. CHECK: the repository's front page should now list the folders
+   .streamlit, assets, data and ephem, and the file app.py, directly - not
+   inside another folder. If instead you see ONE folder called
+   sidereal-lilly-chart (or SiderealLillyApp_github), the folder itself was
+   dragged. The easiest fix is to start again: open "Settings" (top of the
+   repository) > scroll to the bottom > "Delete this repository", then
+   repeat Parts B and C.
+
+
+PART D. START THE APP ON STREAMLIT COMMUNITY CLOUD
+--------------------------------------------------
+1. Go to share.streamlit.io and choose "Continue with GitHub". Allow
+   Streamlit to see your GitHub account when asked. If it asks you to fill
+   in an account form (name, e-mail), do so.
+2. In your Streamlit workspace click "Create app" (top right). If it asks
+   whether you already have an app, choose "Yup, I have an app" (deploy a
+   public app from GitHub).
+3. Fill in:
+     Repository:      <your GitHub name>/sidereal-oracle
+     Branch:          main
+     Main file path:  app.py
+     App URL:         optional - type a short name, e.g. sidereal-oracle, to
+                      get sidereal-oracle.streamlit.app (if it is free)
+4. Click "Advanced settings". Set "Python version" to 3.12 (the app was
+   checked for it). Click "Save". The Python version cannot be changed later
+   without deleting and re-creating the app.
+5. Click "Deploy". A log scrolls past for about 2-5 minutes while the app is
+   built. Then the app opens. On its very first start it also downloads the
+   NASA JPL planet file (32 MB), which can add a minute.
+6. Bookmark the address. It works on a PC and on a phone (the app switches
+   to its phone layout by itself). Send it to anyone you like.
+
+
+PART E. CHECK THAT IT WORKS
+---------------------------
+- The Chart page shows the wheel on a dark starfield background with gold
+  headings. Press "What does this mean? (plain English)".
+- On "Auspicious dates", choose 7 days and press "Find auspicious times".
+- Open the address on your phone as well.
+
+
+IF SOMETHING GOES WRONG
+-----------------------
+- "A file of the app is missing: glossary.py" (or qr_code.py): these two
+  files are new. Upload them with the rest, then Reboot app.
+- The build log ends with an error such as "ModuleNotFoundError": the file
+  requirements.txt is not at the top level of the repository. Check Part C,
+  step 5.
+- "The NASA JPL planetary data file could not be loaded": NASA's server did
+  not answer. In your Streamlit workspace, click the three dots next to the
+  app > "Reboot app".
+- "This app has gone to sleep due to inactivity": normal for free apps that
+  nobody has opened for a while. Click the button to wake it; it takes under
+  a minute.
+- Your profile, picture and friends are kept online only while the app is
+  open, unless you tick "Remember me on this device" in your profile (or
+  click that button in the sidebar). Then they are kept in that phone's or
+  computer's browser, and nowhere else, and are there next time.
+  "Forget me on this device" deletes them. An iPhone may clear them if the
+  app is not opened for a week or more: keep your friend card files too.
+
+
+ADD THE APP TO YOUR PHONE'S HOME SCREEN
+---------------------------------------
+Once the app is online, open its address on the phone, then:
+- iPhone or iPad (Safari): tap the Share button (a square with an arrow;
+  in newer versions it is inside the "..." menu), scroll down, tap
+  "Add to Home Screen", then "Add".
+- Android (Chrome): tap the three dots at the top right, then "Add to home
+  screen" (or "Install app"), then "Add".
+An icon then starts the app like any other app. Note: free Streamlit
+hosting does not let an app choose its home-screen picture, so the phone
+picks one itself - usually a small picture of the page or a letter, not the
+gold astrolabe used on the computer. The app itself works the same.
+If the app was asleep, the first tap shows the "wake up" button.
+
+
+LATER CHANGES (when you get new zips from me)
+---------------------------------------------
+1. Unzip the new SiderealLillyApp_github.zip as in Part A.
+2. On github.com open your repository > "Add file" > "Upload files".
+3. Drag in ALL 26 items again, exactly as in Part C. Files with the same
+   name are replaced; the others are left alone. Click "Commit changes".
+4. Streamlit notices the change and updates the app within a minute or two.
+5. To be sure the app uses all the new files, restart it once: open the
+   app's web address while signed in to Streamlit, click "Manage app" at the
+   bottom right (on a phone: the small red button with a white crown), then
+   the three dots > "Reboot app". It is back within about a minute.
+   If the app ever says "The app's files are out of step", or shows an
+   error after an update, do steps 3 and 5 again.
+
+
+IF THE COLOURS ARE WRONG (bright pinkish-red buttons, white input boxes)
+-----------------------------------------------------------------------
+The file .streamlit/config.toml did not upload. On github.com open your
+repository > "Add file" > "Create new file". In the name box type exactly
+    .streamlit/config.toml
+(typing the "/" makes the folder), paste in these lines:
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "dark"
+primaryColor = "#b5461a"
+backgroundColor = "#0b111c"
+secondaryBackgroundColor = "#111927"
+textColor = "#f7f1ea"
+font = "sans serif"
+
+and click "Commit changes...". The app picks up the colours within a minute
+(reload the page).
