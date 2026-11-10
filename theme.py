@@ -12,7 +12,6 @@ Palette roles (the key names are kept from the first theme so that the rest of t
   void        #0b111c  page base, wheel face
   panel       #111927  panels and cards
   band_a/b    #172134 / #21304a  alternating constellation bands on the wheel
-    band_oph    #0c1a42            Ophiuchus' band: its own darker blue (user request)
   orbit       #4f6789  rings, house lines, borders (decoration only, not text)
   starlight   #f7f1ea  body text
   dust        #c4ccdb  secondary text, captions
@@ -26,8 +25,7 @@ Palette roles (the key names are kept from the first theme so that the rest of t
 """
 import base64, os
 
-PALETTE = {'void': '#0b111c', 'panel': '#111927', 'band_a': '#172134', 'band_b': '#21304a', 'band_oph': '#0c1a42',
-           'orbit': '#4f6789',
+PALETTE = {'void': '#0b111c', 'panel': '#111927', 'band_a': '#172134', 'band_b': '#21304a', 'orbit': '#4f6789',
            'starlight': '#f7f1ea', 'dust': '#c4ccdb', 'brass': '#f2994a', 'brass_pale': '#ffcd9c', 'primary': '#b5461a',
            'ion': '#6fd0dc', 'ember': '#ec6a4c', 'nebula': '#45b3bf', 'rose': '#f094c8'}
 # phone tables: black text on a warm parchment
@@ -42,7 +40,6 @@ def rgba(hex_colour, alpha):
 
 WHEEL_THEME = dict(
     fig_bg='none', face=PALETTE['void'], face_alpha=0.85, band_a=PALETTE['band_a'], band_b=PALETTE['band_b'],
-    band_oph=PALETTE['band_oph'],    # Ophiuchus: its own darker blue (user request)
     band_edge=PALETTE['void'], band_text=PALETTE['starlight'], ring=PALETTE['orbit'], ink=PALETTE['starlight'],
     grey=PALETTE['dust'], up=PALETTE['brass'], down_face=PALETTE['void'], accent=PALETTE['rose'],
     label_bg=PALETTE['void'], harmony=PALETTE['ion'], tension=PALETTE['ember'], house_line=PALETTE['orbit'],
