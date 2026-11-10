@@ -93,7 +93,7 @@ PART D. START THE APP ON STREAMLIT COMMUNITY CLOUD
 PART E. CHECK THAT IT WORKS
 ---------------------------
 - The Chart page shows the wheel on a dark starfield background with gold
-  headings. Press "What does this mean? (plain English)".
+  headings. Press "What does this mean?".
 - On "Auspicious dates", choose 7 days and press "Find auspicious times".
 - Open the address on your phone as well.
 

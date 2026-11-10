@@ -40,6 +40,9 @@ def run(utc, lat, lon, elev, beams_rule, orb_col):
 
 
 user_profile.title('The Sidereal Oracle', 'The Sidereal Oracle')      # home page title (user request)
+# subtitle under the title (user's wording)
+st.markdown('<p class="lilly-subtitle" style="font-size:1.12rem; line-height:1.45; margin:-0.4rem 0 0.9rem 0; '
+            'color:#f7f1ea;">Horoscope readings of the real sky for any moment and place, using NASA JPL planet movements and the actual constellation positions</p>', unsafe_allow_html=True)
 PHONE = device.phone()
 FULL = device.full_view()          # Simple view: the chart, the sky and the forecast; Full view: also Lilly's tables
 
@@ -189,7 +192,7 @@ with st.container(border=True):
     st.markdown(fc['summary'] if FULL else plain_forecast.overview(fc, R))
     # the plain-English summary first and most prominent (user request), then the Strengths and the Weaknesses;
     # each opens in its own window
-    if st.button('What does this mean? (plain English)', type='primary', icon=':material/lightbulb:', key='plain_btn',
+    if st.button('What does this mean?', type='primary', icon=':material/lightbulb:', key='plain_btn',
                  width='stretch', help='A summary of the Forecast without the technical terms, with this moment judged '
                                        'for the four undertakings of the Auspicious dates page.'):
         tzkey = tzname if (tzname and not override) else f'UTC{tz:+.2f}'

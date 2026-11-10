@@ -61,7 +61,7 @@ else:
 # ---------------------------------------------------------------- 2. add
 st.subheader('2 · Add a friend')
 with st.container(border=True):
-    t1, t2, t3 = st.tabs(['Upload a card file', 'Paste a code', 'Optional: enter their data by hand'])
+    t1, t2, t3 = st.tabs(['Upload a card file', 'Paste a code', 'Manual entry'])
     found, err = None, None
     with t1:
         f = st.file_uploader('Your friend\'s .lillycard file', type=['lillycard', 'json'], key='fr_file')

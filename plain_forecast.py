@@ -247,7 +247,7 @@ def show_strengths(fc, place, local):
         _rule_items(fc['strengths'])
     else:
         st.info('None of the strengths in Lilly\'s rules apply at this moment.')
-    st.caption('For the same in plain English, close this window and press "What does this mean? (plain English)".')
+    st.caption('For the same in plain English, close this window and press "What does this mean?".')
 
 
 @st.dialog('Weaknesses', width='large')
@@ -261,4 +261,4 @@ def show_weaknesses(fc, place, local):
         _rule_items(fc['weaknesses'])
     else:
         st.info('None of the weaknesses in Lilly\'s rules apply at this moment.')
-    st.caption('For the same in plain English, close this window and press "What does this mean? (plain English)".')
+    st.caption('For the same in plain English, close this window and press "What does this mean?".')

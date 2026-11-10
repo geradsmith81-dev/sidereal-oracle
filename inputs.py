@@ -84,6 +84,20 @@ def place_picker(prefix):
         lat = st.number_input('Latitude (°N)', -89.0, 89.0, 51.5, 0.0001, format='%.4f', key=prefix + '_lat')
         lon = st.number_input('Longitude (°E)', -180.0, 180.0, 0.0, 0.0001, format='%.4f', key=prefix + '_lon')
         tzname = None
-    elev = st.number_input('Elevation (m)', 0.0, 9000.0, 0.0, 10.0, key=prefix + '_elev',
-                           help='Not in the gazetteer; affects sunrise (planetary hours) slightly.')
+    # elevation: starts at the elevation of where you live (profile) when this is your home town, else at 0 m
+    # (user request); it starts again whenever another place is chosen, and can always be typed over
+    home = user_profile.get().get('home')
+    at_home = (not manual and bool(home) and abs(lat - home['lat']) < 1e-3 and abs(lon - home['lon']) < 1e-3)
+    default_elev = float(home.get('elev') or 0.0) if at_home else 0.0
+    here = (round(float(lat), 4), round(float(lon), 4), default_elev)
+    if st.session_state.get(prefix + '_elev_for') != here:
+        st.session_state[prefix + '_elev_for'] = here
+        st.session_state[prefix + '_elev'] = default_elev
+    elev = st.number_input('Elevation (m)', 0.0, 9000.0, step=10.0, key=prefix + '_elev',
+                           help=('Starts at the elevation of where you live (your profile). ' if at_home and default_elev
+                                 else 'Not in the gazetteer: add the elevation of where you live in your profile '
+                                      '(Edit profile) and it is filled in for your home town. ')
+                                + 'It changes sunrise, and so the planetary hours, slightly.')
+    if at_home and default_elev:
+        st.caption(f'Elevation {default_elev:.0f} m: where you live (your profile).')
     return place, lat, lon, tzname, elev
