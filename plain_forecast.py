@@ -77,6 +77,20 @@ def badge(g):
             f"font-weight:600;border:1px solid {theme.PALETTE['orbit']}'>{GRADE_TXT[g]}</span>")
 
 
+def best_box(b):
+    """'Best time this week' as a highlighted box (user request: make it stand out): a gold-edged panel with a star,
+    the day and hours in large white type and the grade badge."""
+    label = 'Best time this week'
+    return (f"<div class='lilly-best' style='margin:0.6rem 0 0.25rem; padding:0.6rem 0.8rem; border-radius:0.65rem; "
+            f"border:1px solid {theme.PALETTE['brass']}; border-left:6px solid {theme.PALETTE['brass']}; "
+            f"background:{theme.rgba(theme.PALETTE['brass'], 0.18)}; color:#ffffff; line-height:1.45; "
+            f"box-shadow:0 0 14px {theme.rgba(theme.PALETTE['brass'], 0.30)};'>"
+            f"<span style='color:{theme.PALETTE['brass_pale']}; font-weight:700; font-size:0.95rem; "
+            f"letter-spacing:0.03em;'>&#9733; {label}</span><br>"
+            f"<span style='color:#ffffff; font-weight:700; font-size:1.15rem;'>{b['start']:%a %d %b}, "
+            f"{b['start']:%H:%M}–{b['end']:%H:%M}</span>&nbsp; {badge(b['grade'])}</div>")
+
+
 def overview(fc, R):
     s, w = fc['strengths'], fc['weaknesses']
     cautions = [x for x in w if x.get('id') in CAUTIONS]
@@ -172,8 +186,7 @@ def show(fc, R, rows, bands, cusps, stars, ph, lat, lon, elev, tzkey, local, bea
                 working_undertaking(j, W[k]['q'])
             b = W[k]['best']
             if b:
-                st.caption(f"Best time this week: {b['start']:%a %d %b}, {b['start']:%H:%M}–{b['end']:%H:%M} "
-                           f"({GRADE_TXT[b['grade']]}).")
+                st.markdown(best_box(b), unsafe_allow_html=True)
             else:
                 st.caption('Every hour this week has one of Lilly\'s warnings for this undertaking.')
     st.caption(f"Week compared: {start:%d %b} to {start + dt.timedelta(days=6):%d %b %Y}, every hour, at {place}. "

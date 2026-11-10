@@ -108,11 +108,23 @@ _LP_NOT = (':not(:is(h1, h2, h3, h4, h5, h6))'
            ':not([data-testid="stMetricValue"] *)'
            ':not([data-testid="stCaptionContainer"]):not([data-testid="stCaptionContainer"] *)')
 LIGHT_PROOF_TEXT_SELECTOR = f'body :is({_LP_SCOPE}) :is({_LP_TEXT}){_LP_NOT}'
-_LP_BUTTONS = ', '.join(f'button[data-testid="{t}"]' for t in (
+_LP_BUTTONS = ', '.join([f'button[data-testid="{t}"]' for t in (
     'stBaseButton-secondary', 'stBaseButton-secondaryFormSubmit', 'stBaseButton-segmented_control',
-    'stBaseButton-pills', 'stPopoverButton'))
-_LP_ACTIVE = ', '.join(f'button[data-testid="{t}"]' for t in ('stBaseButton-segmented_controlActive',
-                                                              'stBaseButton-pillsActive'))
+    'stBaseButton-pills', 'stPopoverButton')]
+    # the options of st.segmented_control / st.pills carry kind="..." rather than a data-testid (Streamlit 1.67)
+    + ['button[kind="segmented_control"]', 'button[kind="pills"]'])
+_LP_ACTIVE = ', '.join([f'button[data-testid="{t}"]' for t in ('stBaseButton-segmented_controlActive',
+                                                               'stBaseButton-pillsActive')]
+                       + ['button[kind="segmented_controlActive"]', 'button[kind="pillsActive"]'])
+# Streamlit's own pop-ups, drawn outside the page (user report: white boxes with white text in light mode). They are
+# painted dark too, so that the phone layout's white text, or the light text above, can be read on them.
+_LP_OVERLAYS = ', '.join(['.stTooltipContent', '.stTooltipErrorContent']
+                         + [f'[data-testid="{t}"]' for t in (
+    'stMainMenuPopover', 'stTooltipContent', 'stTooltipErrorContent', 'stToast', 'stDateInputQuickSelectPopover',
+    'stDateInputHeaderPickerPopover', 'stDateTimeInputPopoverTime', 'stColorPickerPopover', 'stJsonPathTooltipBody',
+    'stDataFrameTooltipContent', 'stDataFrameColumnMenu', 'stDataFrameColumnFormattingMenu',
+    'stDataFrameColumnVisibilityMenu', 'stDataFrameStatisticsMenu', 'stDataFrameButtonActionMenu',
+    'stTopNavPopoverBody', 'stMenuButtonBody', 'stClearCacheDialog')])
 
 
 def light_proof_css(p, phone=False):
@@ -141,7 +153,18 @@ def light_proof_css(p, phone=False):
         f'    [data-testid="stHeader"] :is(button, a, span, svg) {{ color: {txt} !important; }}\n'
         f'    [data-testid="stTooltipIcon"] svg, [data-testid="stWidgetLabel"] svg {{ color: {p["dust"]} !important; }}\n'
         f'    [data-testid="stCheckbox"] [role="checkbox"], [data-testid="stCheckbox"] span:has(> input) {{\n'
-        f'        border-color: {p["dust"]} !important; }}\n')
+        f'        border-color: {p["dust"]} !important; }}\n'
+        f'    :is({_LP_OVERLAYS}), div:has(> :is(.stTooltipContent, .stTooltipErrorContent)) {{\n'
+        f'        background-color: {p["panel"]} !important; color: {txt} !important; border-color: {p["orbit"]} !important; }}\n'
+        f'    :is({_LP_OVERLAYS}) :is(p, span, li, label, small, b, strong, em, div, button, td, th) {{ color: {txt} !important; }}\n'
+        f'    :is({_LP_OVERLAYS}) a {{ color: {p["ion"]} !important; }}\n'
+        f'    :is({_LP_OVERLAYS}) :is(button, [role^="menuitem"], [role="option"], li) {{ background-color: transparent !important; }}\n'
+        f'    :is({_LP_OVERLAYS}) :is(button, [role^="menuitem"], [role="option"], li):is(:hover, :focus-visible) {{\n'
+        f'        background-color: {rgba(p["orbit"], 0.45)} !important; }}\n'
+        f'    :is({_LP_OVERLAYS}) :is([aria-checked="true"], [aria-selected="true"], [aria-pressed="true"]) {{\n'
+        f'        background-color: {rgba(p["orbit"], 0.7)} !important; }}\n'
+        f'    :is({_LP_OVERLAYS}) hr, [data-testid="stMainMenuDivider"] {{ border-color: {p["orbit"]} !important;\n'
+        f'        background-color: {p["orbit"]} !important; }}\n')
 
 
 def css(bg_path='assets/background.jpg', phone=False):
