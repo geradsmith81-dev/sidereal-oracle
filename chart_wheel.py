@@ -14,7 +14,7 @@ from matplotlib.figure import Figure
 ZODIACAL = {'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpius',
             'Ophiuchus', 'Sagittarius', 'Capricornus', 'Aquarius', 'Pisces'}
 INK, GREY, ACCENT = '#222222', '#8a8a8a', '#7a3b8f'
-LIGHT = dict(fig_bg='white', face='white', band_a='#ececec', band_b='#dcdcdc', band_edge='white', band_text=INK,
+LIGHT = dict(fig_bg='white', face='white', band_a='#ececec', band_b='#dcdcdc', band_oph='#b9c4d8', band_edge='white', band_text=INK,
              ring=GREY, ink=INK, grey=GREY, up=INK, down_face='white', accent=ACCENT, label_bg='white',
              harmony='#3c7d3c', tension='#b04a5a', house_line='#9a9a9a',
              harmony_name='green', tension_name='red', accent_name='Purple')
@@ -62,7 +62,9 @@ def draw_wheel(rows, bands, title, asc, mc, cusps=None, scores=None, aspects=Non
     ends = starts[1:] + [starts[0] + 360]
     for i, ((s, abbr, name), e) in enumerate(zip(bands, ends)):
         th = np.radians(np.linspace(s, e, 80))
-        shade = th_['band_a'] if i % 2 == 0 else th_['band_b']
+        # Ophiuchus has its own darker blue (user request); the other twelve alternate between two shades
+        shade = (th_.get('band_oph', th_['band_b']) if name == 'Ophiuchus'
+                 else th_['band_a'] if i % 2 == 0 else th_['band_b'])
         ax.fill_between(th, 0.86, 1.0, color=shade, lw=0)
         ax.plot([np.radians(s)] * 2, [0.86, 1.0], color=th_['band_edge'], lw=1.2)
         mid = np.radians((s + e) / 2)

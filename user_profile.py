@@ -105,7 +105,7 @@ def save(name, avatar, birth, home=None):
 
 def _reset_place_search():
     """Start the place search of every page again from the (new) home place."""
-    for k in ['_place_q'] + [f'{pre}_{w}' for pre in ('c', 'e', 'f') for w in ('q', 'pick')]:
+    for k in ['_place_q'] + [f'{pre}_{w}' for pre in ('c', 'e', 'f') for w in ('q', 'pick', 'elev', 'elev_for')]:
         st.session_state.pop(k, None)
 
 
@@ -366,8 +366,10 @@ def _valid_home(h):
         lat, lon = float(h['lat']), float(h['lon'])
         if not (-90 <= lat <= 90 and -180 <= lon <= 180):
             return None
+        elev = float(h.get('elev') or 0.0)
+        elev = round(min(max(elev, 0.0), 9000.0))         # metres above sea level (typed in by the user)
         return dict(name=clean_name(h['name'])[:MAX_NAME], country=clean_name(h.get('country', ''))[:MAX_NAME],
-                    lat=round(lat, 5), lon=round(lon, 5), tz=str(h['tz'])[:64] if h.get('tz') else None)
+                    lat=round(lat, 5), lon=round(lon, 5), tz=str(h['tz'])[:64] if h.get('tz') else None, elev=elev)
     except (KeyError, ValueError, TypeError):
         return None
 
@@ -516,6 +518,61 @@ def incoming_card():
     _incoming_dialog(f)
 
 
+# ---------------------------------------------------------------- reading a pasted LILLY1: code, forgivingly
+# Phones and messaging apps change pasted text: they may write the prefix in small letters ("lilly1:", user report),
+# break the code into lines, add spaces or invisible characters, turn "-" into a typographic dash, or send it inside
+# a sentence or a link (?card=LILLY1%3A...). The code itself is base64url, which never contains those characters,
+# so they can be removed safely. If words follow the code, shorter and shorter pieces are tried.
+_B64URL = set('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=')
+_DASHES = dict.fromkeys(map(ord, '\u2010\u2011\u2012\u2013\u2014\u2015\u2212\ufe63\uff0d'), '-')
+_INVISIBLE = set('\u200b\u200c\u200d\u2060\ufeff\u00ad')
+_PREFIX_RE = re.compile(r'lilly\s*1\s*[:\uff1a]', re.IGNORECASE)
+
+
+def _code_candidates(text):
+    """The possible base64 parts of a LILLY1: code found anywhere in `text`, longest first; [] if there is none."""
+    t = str(text)
+    if re.search(r'lilly1%3a', t, re.IGNORECASE):
+        t = urllib.parse.unquote(t)
+    t = t.translate(_DASHES)
+    m = _PREFIX_RE.search(t)
+    if not m:
+        return []
+    pieces, cur = [], ''
+    for ch in t[m.end():]:
+        if ch in _INVISIBLE:
+            continue
+        if ch.isspace():
+            if cur:
+                pieces.append(cur)
+                cur = ''
+            continue
+        if ch in _B64URL:
+            cur += ch
+            continue
+        break                                     # the first character that cannot be part of a code ends it
+    if cur:
+        pieces.append(cur)
+    return [''.join(pieces[:k]) for k in range(len(pieces), 0, -1)]
+
+
+def _decode_code(text):
+    """JSON text of the card in a LILLY1: code, or None if `text` holds no code; ValueError if it cannot be read."""
+    cands = _code_candidates(text)
+    if not cands:
+        return None
+    for b in cands:
+        b = b.rstrip('=')
+        try:
+            raw = zlib.decompress(base64.urlsafe_b64decode(b + '=' * (-len(b) % 4)), bufsize=65536).decode('utf-8')
+            json.loads(raw)
+            return raw
+        except Exception:
+            continue
+    raise ValueError('That code could not be read: part of it is missing or was changed on the way. Copy the whole '
+                     'code again in one piece (it starts with LILLY1:), or ask your friend for the .lillycard file.')
+
+
 def parse_card(data):
     """data: bytes of a .lillycard file, or the text code. Returns a friend dict; raises ValueError (plain message)."""
     if isinstance(data, bytes):
@@ -524,13 +581,10 @@ def parse_card(data):
         text = data.decode('utf-8', errors='replace').strip()
     else:
         text = str(data).strip()
-    if text.startswith(CODE_PREFIX):
-        try:
-            b = text[len(CODE_PREFIX):].strip()
-            b += '=' * (-len(b) % 4)
-            text = zlib.decompress(base64.urlsafe_b64decode(b), bufsize=65536).decode('utf-8')
-        except Exception:
-            raise ValueError('That code could not be read. Check that it was copied completely, starting with LILLY1:')
+    if not text.lstrip().startswith('{'):          # not a card file: look for a LILLY1: code (any case, any spacing)
+        decoded = _decode_code(text)
+        if decoded is not None:
+            text = decoded
     try:
         card = json.loads(text)
     except ValueError:
@@ -633,9 +687,16 @@ def edit_dialog():
         j = st.selectbox('Matches', range(len(hhits)), index=same_h[0] if same_h else 0,
                          format_func=lambda k: places.label(hhits[k]), key='pf_home_pick')
         hh = hhits[j]
-        home = _valid_home(dict(name=hh['name'], country=hh['country'], lat=hh['lat'], lon=hh['lon'], tz=hh['tz']))
-        st.caption(f"{hh['name']}, {hh['country']} · {hh['lat']:.3f}°, {hh['lon']:.3f}° · time zone {hh['tz']}. "
-                   'Not included in your friend card.')
+        same_place = bool(h0) and abs(hh['lat'] - h0['lat']) < 1e-3 and abs(hh['lon'] - h0['lon']) < 1e-3
+        h_elev = st.number_input('Elevation of where you live (metres above sea level)', 0.0, 9000.0,
+                                 float(h0.get('elev') or 0.0) if same_place else 0.0, 10.0, key='pf_home_elev',
+                                 help='Optional. The Chart, Auspicious dates and Friends pages start at this elevation '
+                                      'when the place is your home town. A map app, or searching "<your town> '
+                                      'elevation", gives it. It changes sunrise, and so the planetary hours, slightly.')
+        home = _valid_home(dict(name=hh['name'], country=hh['country'], lat=hh['lat'], lon=hh['lon'], tz=hh['tz'],
+                                elev=h_elev))
+        st.caption(f"{hh['name']}, {hh['country']} · {hh['lat']:.3f}°, {hh['lon']:.3f}° · {home['elev']:.0f} m · "
+                   f"time zone {hh['tz']}. Not included in your friend card.")
     remember = None
     if LOCAL:
         st.caption('On this computer your profile is saved in the app\'s "profile" folder and never leaves it.')
