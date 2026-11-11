@@ -257,8 +257,14 @@ def overview(fc, R):
         texts.append('\n\n'.join(lines) if voice.polite() else voice.filter_text('\n\n'.join(lines)))
     for t in texts:
         if not voice.is_used(t):
-            return voice.mark_used(t)
+            voice.mark_used(t)
+            return t if voice.polite() else getattr(voice, 'vary', lambda x: x)(t)
     return texts[0]
+
+
+def _v(t):
+    """Idiom variety for a line about to be shown (The Foul-Mouthed Oracle only)."""
+    return getattr(voice, 'vary', lambda x: x)(t)
 
 
 def _plain_list(xs, empty):
@@ -329,10 +335,10 @@ def show(fc, R, rows, bands, cusps, stars, ph, lat, lon, elev, tzkey, local, bea
             good = [x for x in shared if x[3] == 'good']
             bad = [x for x in shared if x[3] in ('avoid', 'bad')]
             if good:
-                st.markdown(f"**{voice.pick('helping', seed='all')}**\n" + '\n'.join(f'- {t}' for _, t, _, _ in good))
+                st.markdown(f"**{voice.pick('helping', seed='all')}**\n" + '\n'.join(f'- {_v(t)}' for _, t, _, _ in good))
             if bad:
                 st.markdown(f"**{voice.pick('take_care', seed='all')}**\n"
-                            + '\n'.join(f"- {'⚠ ' if kk == 'avoid' else ''}{t}" for _, t, _, kk in bad))
+                            + '\n'.join(f"- {'⚠ ' if kk == 'avoid' else ''}{_v(t)}" for _, t, _, kk in bad))
             with st.expander(labels.pop(0), icon=':material/calculate:'):
                 working_items(shared_items, 'These count in every undertaking they apply to.')
     cols = st.columns(2)
@@ -347,10 +353,10 @@ def show(fc, R, rows, bands, cusps, stars, ph, lat, lon, elev, tzkey, local, bea
             good = _reasons(own, ('good',))
             bad = _reasons(own, ('avoid', 'bad'))
             if good:
-                st.markdown(f"**{voice.pick('helping', seed=k)}**\n" + '\n'.join(f'- {t}' for _, t, _, _ in good))
+                st.markdown(f"**{voice.pick('helping', seed=k)}**\n" + '\n'.join(f'- {_v(t)}' for _, t, _, _ in good))
             if bad:
                 st.markdown(f"**{voice.pick('take_care', seed=k)}**\n"
-                            + '\n'.join(f"- {'⚠ ' if kk == 'avoid' else ''}{t}" for _, t, _, kk in bad))
+                            + '\n'.join(f"- {'⚠ ' if kk == 'avoid' else ''}{_v(t)}" for _, t, _, kk in bad))
             with st.expander(labels.pop(0) if labels else WORKING_LABELS[-1], icon=':material/calculate:'):
                 working_undertaking(j, W[k]['q'], skip={ix for ix, x in enumerate(pl) if x[1] in shared_txt},
                                     name=SHORT[k])
