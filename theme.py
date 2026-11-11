@@ -112,10 +112,19 @@ _LP_BUTTONS = ', '.join([f'button[data-testid="{t}"]' for t in (
     'stBaseButton-secondary', 'stBaseButton-secondaryFormSubmit', 'stBaseButton-segmented_control',
     'stBaseButton-pills', 'stPopoverButton')]
     # the options of st.segmented_control / st.pills carry kind="..." rather than a data-testid (Streamlit 1.67)
-    + ['button[kind="segmented_control"]', 'button[kind="pills"]'])
+    + ['button[kind="segmented_control"]', 'button[kind="pills"]']
+    # Streamlit 1.67 draws them as toggle buttons with data-variant="..." (user report: white boxes in light mode)
+    + ['button[data-variant="segmented_control"]', 'button[data-variant="pills"]',
+       '[data-testid="stButtonGroup"] button'])
 _LP_ACTIVE = ', '.join([f'button[data-testid="{t}"]' for t in ('stBaseButton-segmented_controlActive',
                                                                'stBaseButton-pillsActive')]
-                       + ['button[kind="segmented_controlActive"]', 'button[kind="pillsActive"]'])
+                       + ['button[kind="segmented_controlActive"]', 'button[kind="pillsActive"]']
+                       # 1.67: the chosen option carries data-selected
+                       + ['button[data-variant="segmented_control"][data-selected]',
+                          'button[data-variant="pills"][data-selected]',
+                          '[data-testid="stButtonGroup"] button[data-selected]',
+                          '[data-testid="stButtonGroup"] button[aria-checked="true"]',
+                          '[data-testid="stButtonGroup"] button[aria-pressed="true"]'])
 # Streamlit's own pop-ups, drawn outside the page (user report: white boxes with white text in light mode). They are
 # painted dark too, so that the phone layout's white text, or the light text above, can be read on them.
 _LP_OVERLAYS = ', '.join(['.stTooltipContent', '.stTooltipErrorContent']
@@ -150,6 +159,15 @@ def light_proof_css(p, phone=False):
         f'        background-color: {p["panel"]} !important; color: {txt} !important; border: 1px solid {p["orbit"]}; }}\n'
         f'    [data-testid="stDialog"] [role="dialog"] button[aria-label="Close"] {{ color: {txt} !important; }}\n'
         f'    [data-testid="stExpander"] details, [data-testid="stExpander"] summary {{ border-color: {p["orbit"]} !important; }}\n'
+        # folding-box headers and the file-upload box: Streamlit paints them white in light mode (user report)
+        f'    [data-testid="stExpander"] summary {{ background-color: {p["panel"]} !important; color: {txt} !important; }}\n'
+        f'    [data-testid="stExpander"] summary:hover {{ background-color: {rgba(p["orbit"], 0.45)} !important; }}\n'
+        f'    [data-testid="stExpander"] summary :is(p, span, div, svg) {{ color: {txt} !important; }}\n'
+        f'    [data-testid="stExpander"] details {{ background-color: transparent !important; }}\n'
+        f'    [data-testid="stFileUploaderDropzone"] {{ background-color: {p["panel"]} !important;\n'
+        f'        border: 1px dashed {p["orbit"]} !important; color: {txt} !important; }}\n'
+        f'    [data-testid="stFileUploaderDropzoneInstructions"] :is(span, small, div, p) {{ color: {p["dust"]} !important; }}\n'
+        f'    [data-testid="stFileUploader"] :is(svg, small) {{ color: {p["dust"]} !important; }}\n'
         f'    [data-testid="stHeader"] :is(button, a, span, svg) {{ color: {txt} !important; }}\n'
         f'    [data-testid="stTooltipIcon"] svg, [data-testid="stWidgetLabel"] svg {{ color: {p["dust"]} !important; }}\n'
         f'    [data-testid="stCheckbox"] [role="checkbox"], [data-testid="stCheckbox"] span:has(> input) {{\n'
@@ -164,7 +182,13 @@ def light_proof_css(p, phone=False):
         f'    :is({_LP_OVERLAYS}) :is([aria-checked="true"], [aria-selected="true"], [aria-pressed="true"]) {{\n'
         f'        background-color: {rgba(p["orbit"], 0.7)} !important; }}\n'
         f'    :is({_LP_OVERLAYS}) hr, [data-testid="stMainMenuDivider"] {{ border-color: {p["orbit"]} !important;\n'
-        f'        background-color: {p["orbit"]} !important; }}\n')
+        f'        background-color: {p["orbit"]} !important; }}\n'
+        # notice boxes (st.info / success / warning / error): Streamlit paints them pale in light mode, where the
+        # app's light text vanished (user report). Always a dark tinted panel with light text; dark mode looks the same.
+        f'    [data-testid="stAlertContainer"], [data-testid="stAlert"] > div {{ background-color: #16283a !important;\n'
+        f'        border: 1px solid {p["orbit"]} !important; color: {txt} !important; }}\n'
+        f'    [data-testid="stAlertContainer"] :is(p, span, li, b, strong, em, div, small) {{ color: {txt} !important; }}\n'
+        f'    [data-testid="stAlertContainer"] a {{ color: {p["ion"]} !important; }}\n')
 
 
 def css(bg_path='assets/background.jpg', phone=False):

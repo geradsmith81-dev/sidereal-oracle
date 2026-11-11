@@ -42,7 +42,7 @@ def run(utc, lat, lon, elev, beams_rule, orb_col):
 user_profile.title('The Sidereal Oracle', 'The Sidereal Oracle')      # home page title (user request)
 # subtitle under the title (user's wording)
 st.markdown('<p class="lilly-subtitle" style="font-size:1.12rem; line-height:1.45; margin:-0.4rem 0 0.9rem 0; '
-            'color:#f7f1ea;">Horoscope readings of the real sky for any moment and place. Powerfully calculated using NASA JPL planet movements and the actual constellation positions.</p>', unsafe_allow_html=True)
+            'color:#f7f1ea;">Horoscope readings of the real sky for any moment and place. Powerfully calculated using NASA JPL planet movements, the actual constellation positions, and William Lilly\'s original 1647 work.</p>', unsafe_allow_html=True)
 PHONE = device.phone()
 FULL = device.full_view()          # Simple view: the chart, the sky and the forecast; Full view: also Lilly's tables
 
