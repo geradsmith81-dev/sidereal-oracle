@@ -145,16 +145,50 @@ def cite_links(source):
 
 def explain_md(key):
     title, text, pages = TERMS[key]
-    cite = (f'{BOOK}, ' + page_links(pages) + ' (opens the page of the 1647 book)') if pages else 'An app rule.'
+    cite = ('Lilly, ' + page_links(pages)) if pages else 'An app rule.'   # short, so it never repeats as a phrase
     return f'**{title}**  \n{text}  \n\n<small>{cite}</small>'
 
 
 _POP_KEY = 'key' in inspect.signature(st.popover).parameters
 
 
-def chips(keys, where):
-    """A row of small buttons; each opens a short explanation of one term. where: a unique prefix for this row."""
+# Each term is explained once per page (user request: no phrasing twice on one page). app.py calls new_page() at the
+# start of every run; without that call (an older app.py) nothing is held back.
+_SEEN = '_gloss_page_seen'
+
+
+def new_page():
+    try:
+        st.session_state[_SEEN] = set()
+    except Exception:
+        pass
+
+
+def _seen():
+    try:
+        return st.session_state.get(_SEEN)
+    except Exception:
+        return None
+
+
+def unseen(keys):
+    """The terms not yet explained on this page (all of them if the page register is not in use)."""
+    seen = _seen()
     keys = [k for k in dict.fromkeys(keys) if k in TERMS]
+    return keys if seen is None else [k for k in keys if k not in seen]
+
+
+def mark_seen(keys):
+    seen = _seen()
+    if seen is not None:
+        seen.update(keys)
+
+
+def chips(keys, where):
+    """A row of small buttons; each opens a short explanation of one term. where: a unique prefix for this row.
+    Terms already explained elsewhere on the page are left out."""
+    keys = unseen(keys)
+    mark_seen(keys)
     if not keys:
         return
     try:

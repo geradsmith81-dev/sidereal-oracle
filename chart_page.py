@@ -42,7 +42,7 @@ def run(utc, lat, lon, elev, beams_rule, orb_col):
 user_profile.title('The Sidereal Oracle', 'The Sidereal Oracle')      # home page title (user request)
 # subtitle under the title (user's wording)
 st.markdown('<p class="lilly-subtitle" style="font-size:1.12rem; line-height:1.45; margin:-0.4rem 0 0.9rem 0; '
-            'color:#f7f1ea;">Horoscope readings of the real sky for any moment and place, using NASA JPL planet movements and the actual constellation positions</p>', unsafe_allow_html=True)
+            'color:#f7f1ea;">Horoscope readings of the real sky for any moment and place. Powerfully calculated using NASA JPL planet movements and the actual constellation positions.</p>', unsafe_allow_html=True)
 PHONE = device.phone()
 FULL = device.full_view()          # Simple view: the chart, the sky and the forecast; Full view: also Lilly's tables
 
@@ -219,6 +219,11 @@ if not FULL:
     st.stop()
 
 st.subheader("The planets in Lilly's words")
+st.caption('For each planet: fortitudes, debilities and the net score. Lilly: subtract the lesser number from the '
+           f'greater, "and so judge" ([p.181]({glossary.scan_url(181)})).')
+_house_told = {}                       # each house's meaning is quoted once on the page; later planets point back
+_house_seen = []                       # ... each time in a different wording
+_POINTERS = ['its meaning is quoted under {who} above', "Lilly's words for it are given under {who}", 'see {who} above for what it signifies', 'described already, with {who}', 'as told under {who}', 'its signification appears with {who}']
 for p in R['planets']:
     head = (f"{cw.GLYPH[p['planet']]} {p['planet']} in {p['constellation']}"
             + (f" (≈ {p['sign']} {p['sign_deg']:.0f}°)" if p['sign'] else '') + f" · {ORD(p['house'])} house · net {p['net']:+d}")
@@ -230,14 +235,20 @@ for p in R['planets']:
         if p['true_constellation'] != p['constellation']:
             st.caption(f"Its actual position (RA/Dec) lies in {p['true_constellation']}, off the ecliptic band. "
                        f"It is read by the ecliptic band ({p['constellation']}).")
-        st.markdown(f"**The {ORD(p['house'])} house** (Lilly): {ll.house_meaning(p['house'], 400)}")
+        if p['house'] in _house_told:
+            _n = sum(1 for q_ in _house_seen if q_ == p['house'])
+            _house_seen.append(p['house'])
+            st.markdown(f"**The {ORD(p['house'])} house**: " + _POINTERS[_n % len(_POINTERS)].format(
+                who=_house_told[p['house']]) + '.')
+        else:
+            _house_told[p['house']] = p['planet']
+            st.markdown(f"**The {ORD(p['house'])} house** (Lilly): {ll.house_meaning(p['house'], 400)}")
         e1, e2 = st.columns(2)
         e1.markdown('**Essential dignities**  \n' + '  \n'.join(f"{'+' if v > 0 else ''}{v} {txt} <small>({tag})</small>"
                                                                    for _, txt, v, tag in p['essential']), unsafe_allow_html=True)
         e2.markdown('**Accidental**  \n' + '  \n'.join(f"{'+' if v > 0 else ''}{v} {txt} <small>({tag})</small>"
                                                          for _, txt, v, tag in p['accidental']), unsafe_allow_html=True)
-        st.caption(f"Fortitudes {p['fortitudes']} · Debilities {p['debilities']} · Net {p['net']:+d}. Lilly: subtract the lesser "
-                   f'number from the greater, "and so judge" ([p.181]({glossary.scan_url(181)})).')
+        st.caption(f"{p['planet']}: fortitudes {p['fortitudes']} · debilities {p['debilities']} · net {p['net']:+d}")
         glossary.chips([glossary.item_term(k) for k, *_ in p['essential'] + p['accidental']], 'pl_' + p['planet'])
 
 st.subheader('Aspects (Lilly\'s moieties of orbs, p.107)')

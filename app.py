@@ -67,6 +67,12 @@ import theme
 import device
 
 st.markdown(theme.css(os.path.join(HERE, 'assets', 'background.jpg'), phone=device.phone()), unsafe_allow_html=True)
+# no wording twice on one page (user request): a fresh register of what has been said, every run
+for _m in ('glossary', 'plain_forecast'):
+    try:
+        getattr(importlib.import_module(_m), 'new_page', lambda: None)()
+    except Exception:
+        pass
 # online: "Remember me on this device" - read the profile kept in this browser (once), save it when it changes
 getattr(user_profile, 'device_sync', lambda: None)()
 # a friend card opened from a QR code (the link carries ?card=LILLY1:...): offer to add it
