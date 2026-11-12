@@ -105,7 +105,7 @@ def save(name, avatar, birth, home=None):
 
 def _reset_place_search():
     """Start the place search of every page again from the (new) home place."""
-    for k in ['_place_q'] + [f'{pre}_{w}' for pre in ('c', 'e', 'f') for w in ('q', 'pick', 'elev', 'elev_for')]:
+    for k in ['_place_q'] + [f'{pre}_{w}' for pre in ('c', 'e', 'f') for w in ('q', 'pick', 'elev', 'elev_for', 'elev_src', 'elev_found')]:
         st.session_state.pop(k, None)
 
 
@@ -367,7 +367,7 @@ def _valid_home(h):
         if not (-90 <= lat <= 90 and -180 <= lon <= 180):
             return None
         elev = float(h.get('elev') or 0.0)
-        elev = round(min(max(elev, 0.0), 9000.0))         # metres above sea level (typed in by the user)
+        elev = round(min(max(elev, -500.0), 9000.0))      # metres above sea level (looked up or typed in)
         return dict(name=clean_name(h['name'])[:MAX_NAME], country=clean_name(h.get('country', ''))[:MAX_NAME],
                     lat=round(lat, 5), lon=round(lon, 5), tz=str(h['tz'])[:64] if h.get('tz') else None, elev=elev)
     except (KeyError, ValueError, TypeError):
@@ -688,11 +688,18 @@ def edit_dialog():
                          format_func=lambda k: places.label(hhits[k]), key='pf_home_pick')
         hh = hhits[j]
         same_place = bool(h0) and abs(hh['lat'] - h0['lat']) < 1e-3 and abs(hh['lon'] - h0['lon']) < 1e-3
-        h_elev = st.number_input('Elevation of where you live (metres above sea level)', 0.0, 9000.0,
-                                 float(h0.get('elev') or 0.0) if same_place else 0.0, 10.0, key='pf_home_elev',
-                                 help='Optional. The Chart, Auspicious dates and Friends pages start at this elevation '
-                                      'when the place is your home town. A map app, or searching "<your town> '
-                                      'elevation", gives it. It changes sunrise, and so the planetary hours, slightly.')
+        # filled in from a terrain map (Open-Meteo) when another town is chosen (user request); saved value kept
+        here_h = (round(hh['lat'], 4), round(hh['lon'], 4))
+        if st.session_state.get('pf_home_elev_for') != here_h:
+            st.session_state['pf_home_elev_for'] = here_h
+            saved = float(h0.get('elev') or 0.0) if same_place else 0.0
+            st.session_state['pf_home_elev'] = saved or places.elevation(hh['lat'], hh['lon']) or 0.0
+        h_elev = st.number_input('Elevation of where you live (metres above sea level)', -500.0, 9000.0,
+                                 step=10.0, key='pf_home_elev',
+                                 help='Filled in from a terrain map (Open-Meteo, Copernicus DEM, 90 m) when you choose '
+                                      'the town; type over it if you know better. The Chart, Auspicious dates and '
+                                      'Friends pages start at this elevation when the place is your home town. '
+                                      'It changes sunrise, and so the planetary hours, slightly.')
         home = _valid_home(dict(name=hh['name'], country=hh['country'], lat=hh['lat'], lon=hh['lon'], tz=hh['tz'],
                                 elev=h_elev))
         st.caption(f"{hh['name']}, {hh['country']} · {hh['lat']:.3f}°, {hh['lon']:.3f}° · {home['elev']:.0f} m · "

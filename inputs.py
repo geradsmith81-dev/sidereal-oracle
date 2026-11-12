@@ -84,20 +84,30 @@ def place_picker(prefix):
         lat = st.number_input('Latitude (°N)', -89.0, 89.0, 51.5, 0.0001, format='%.4f', key=prefix + '_lat')
         lon = st.number_input('Longitude (°E)', -180.0, 180.0, 0.0, 0.0001, format='%.4f', key=prefix + '_lon')
         tzname = None
-    # elevation: starts at the elevation of where you live (profile) when this is your home town, else at 0 m
-    # (user request); it starts again whenever another place is chosen, and can always be typed over
+    # elevation: the elevation of where you live (profile) when this is your home town; otherwise looked up from a
+    # terrain map (Open-Meteo, user request), 0 m if that fails. It starts again whenever another place is chosen,
+    # and can always be typed over.
     home = user_profile.get().get('home')
     at_home = (not manual and bool(home) and abs(lat - home['lat']) < 1e-3 and abs(lon - home['lon']) < 1e-3)
-    default_elev = float(home.get('elev') or 0.0) if at_home else 0.0
-    here = (round(float(lat), 4), round(float(lon), 4), default_elev)
+    home_elev = float(home.get('elev') or 0.0) if at_home else 0.0
+    here = (round(float(lat), 4), round(float(lon), 4), home_elev)
     if st.session_state.get(prefix + '_elev_for') != here:
         st.session_state[prefix + '_elev_for'] = here
-        st.session_state[prefix + '_elev'] = default_elev
-    elev = st.number_input('Elevation (m)', 0.0, 9000.0, step=10.0, key=prefix + '_elev',
-                           help=('Starts at the elevation of where you live (your profile). ' if at_home and default_elev
-                                 else 'Not in the gazetteer: add the elevation of where you live in your profile '
-                                      '(Edit profile) and it is filled in for your home town. ')
+        found = None if home_elev else places.elevation(lat, lon)
+        st.session_state[prefix + '_elev_src'] = 'home' if home_elev else ('map' if found is not None else 'none')
+        st.session_state[prefix + '_elev_found'] = home_elev or found or 0.0
+        st.session_state[prefix + '_elev'] = home_elev or found or 0.0
+    src = st.session_state.get(prefix + '_elev_src', 'none')
+    shown = st.session_state.get(prefix + '_elev_found', 0.0)
+    elev = st.number_input('Elevation (m)', -500.0, 9000.0, step=10.0, key=prefix + '_elev',
+                           help=({'home': 'Starts at the elevation of where you live (your profile). ',
+                                  'map': 'Looked up for this place from a terrain map (Open-Meteo, Copernicus DEM, '
+                                         '90 m). Type over it if you know better. ',
+                                  'none': 'The elevation lookup could not be reached, so this starts at 0 m. '
+                                          'Type it in if you know it. '}[src])
                                 + 'It changes sunrise, and so the planetary hours, slightly.')
-    if at_home and default_elev:
-        st.caption(f'Elevation {default_elev:.0f} m: where you live (your profile).')
+    if src == 'home':
+        st.caption(f'Elevation {shown:.0f} m: where you live (your profile).')
+    elif src == 'map':
+        st.caption(f'Elevation {shown:.0f} m, looked up for this place (Open-Meteo). You can type over it.')
     return place, lat, lon, tzname, elev

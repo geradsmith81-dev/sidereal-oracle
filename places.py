@@ -5,9 +5,15 @@ with coordinates and IANA time zone. Offsets come from the IANA tz database (zon
 tzdata), which records historical changes (e.g. summer time; London plain GMT in 1850).
 Before standard time zones (mostly before ~1880-1900) the database gives Local Mean Time
 or an early standard; the app shows the offset it used so the user can override it.
-Elevation is not in the gazetteer and defaults to 0 m (editable).
+Elevation is not in the gazetteer: it is looked up from a terrain map (Open-Meteo Elevation API, Copernicus DEM
+GLO-90, 90 m) when a place is chosen, and can always be typed over; 0 m when the lookup fails.
 """
+import json
+import math
+import time
 import unicodedata
+import urllib.request
+from functools import lru_cache
 import datetime as dt
 from zoneinfo import ZoneInfo
 import geonamescache
@@ -94,3 +100,34 @@ def utc_offset_hours(tzname, local_naive):
     else:
         note = ''
     return off, note
+
+
+# ---------------------------------------------------------------- elevation (user request)
+# Open-Meteo Elevation API: free for non-commercial use, no key; data Copernicus DEM GLO-90. Only the coordinates of
+# the chosen place are sent. Results are kept for the session; after a failure (no internet) no new lookups are tried
+# for two minutes, so the app never waits on it repeatedly.
+ELEVATION_URL = 'https://api.open-meteo.com/v1/elevation?latitude={lat:.4f}&longitude={lon:.4f}'
+_elev_down_until = 0.0
+
+
+@lru_cache(maxsize=1024)
+def _elevation(lat, lon):
+    with urllib.request.urlopen(ELEVATION_URL.format(lat=lat, lon=lon), timeout=4) as r:
+        v = float(json.load(r)['elevation'][0])
+    if not math.isfinite(v):
+        raise ValueError(v)
+    return v
+
+
+def elevation(lat, lon):
+    """Terrain height of a point in whole metres above sea level (kept within -500..9000 m), or None when the
+    elevation service cannot be reached."""
+    global _elev_down_until
+    if time.time() < _elev_down_until:
+        return None
+    try:
+        v = _elevation(round(float(lat), 4), round(float(lon), 4))
+    except Exception:
+        _elev_down_until = time.time() + 120
+        return None
+    return float(round(min(max(v, -500.0), 9000.0)))

@@ -125,13 +125,14 @@ st.info("**A plain word about astrology.** This app shows how a 17th-century ast
 # ---------------------------------------------------------------- your data
 st.subheader('Your information')
 st.markdown("Your name, picture, birth details and friends are " +
-            ("saved only on this computer, in the app's **profile** folder. Nothing is sent anywhere."
+            ("saved only on this computer, in the app's **profile** folder, and none of it is sent anywhere."
              if user_profile.LOCAL else
              "kept only while the app is open, unless you tick **Remember me on this device** in your profile: "
              "then they are also kept in this browser's own storage on your phone or computer, and nowhere else. "
              "**Forget me on this device** (in the sidebar) deletes that copy. Nothing is saved on the server.") +
             " A friend card holds your name, birth details and (if you choose) picture: send it only to people you want "
-            "to have them.")
+            "to have them. To fill in the elevation, the app sends only the coordinates of the place you choose (never "
+            "your name or birth details) to the free Open-Meteo elevation service.")
 
 # ---------------------------------------------------------------- glossary
 st.subheader('Words used in the app')
@@ -146,6 +147,8 @@ st.subheader('Sources and credits')
 src = pd.read_csv(os.path.join(HERE, 'data', 'sources.csv'), encoding='utf-8')
 device.table(src, column_config={'url': st.column_config.LinkColumn('Link')})
 st.caption("Lilly's text: Wellcome Collection copy of the 1647 edition, Internet Archive item b30338724, public domain. "
-           "Planet data: NASA JPL DE440s via Skyfield. Places: GeoNames (CC BY 4.0). Time zones: IANA tz database. "
+           "Planet data: NASA JPL DE440s via Skyfield. Places: GeoNames (CC BY 4.0). Elevation: Open-Meteo Elevation API (CC BY 4.0), from the Copernicus "
+           "DEM GLO-90 (© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018, provided under "
+           "COPERNICUS by the European Union and ESA). Time zones: IANA tz database. "
            "Background: Hubble's image of the Lagoon Nebula (heic1808a), credit NASA, ESA, STScI, CC BY 4.0; "
            "the colours of the app were taken from it.")
