@@ -188,7 +188,20 @@ def light_proof_css(p, phone=False):
         f'    [data-testid="stAlertContainer"], [data-testid="stAlert"] > div {{ background-color: #16283a !important;\n'
         f'        border: 1px solid {p["orbit"]} !important; color: {txt} !important; }}\n'
         f'    [data-testid="stAlertContainer"] :is(p, span, li, b, strong, em, div, small) {{ color: {txt} !important; }}\n'
-        f'    [data-testid="stAlertContainer"] a {{ color: {p["ion"]} !important; }}\n')
+        f'    [data-testid="stAlertContainer"] a {{ color: {p["ion"]} !important; }}\n'
+        # code boxes (st.code, e.g. the friend card's text code) and inline `code`: Streamlit paints their background
+        # near-white (#F7F7F6) in light mode while the text stays light (user report: pale text on white). Always the
+        # app's dark code colours, the same as .streamlit/config.toml gives in dark mode.
+        f'    body [data-testid="stCode"] pre {{ background-color: {p["band_a"]} !important;\n'
+        f'        border: 1px solid {p["orbit"]} !important; color: {p["brass_pale"]} !important; }}\n'
+        f'    body [data-testid="stCode"] pre :is(div, code) {{ background-color: transparent !important; }}\n'
+        f'    body [data-testid="stCode"] pre :is(div, code, span) {{ color: {p["brass_pale"]} !important;\n'
+        f'        -webkit-text-fill-color: {p["brass_pale"]} !important; }}\n'
+        f'    body [data-testid="stCode"] button {{ background-color: {p["panel"]} !important; color: {txt} !important;\n'
+        f'        border: 1px solid {p["orbit"]} !important; }}\n'
+        f'    body [data-testid="stCode"] button svg {{ color: {txt} !important; fill: currentColor; }}\n'
+        f'    body [data-testid="stMarkdownContainer"] code:not(pre code) {{ background-color: {p["band_a"]} !important;\n'
+        f'        color: {p["brass_pale"]} !important; -webkit-text-fill-color: {p["brass_pale"]} !important; }}\n')
 
 
 def css(bg_path='assets/background.jpg', phone=False):

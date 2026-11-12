@@ -4,4 +4,5 @@ JPL DE440s,"Park, Folkner, Williams & Boggs (2021), The JPL Planetary and Lunar 
 IAU boundaries,"Delporte (1930) constellation boundaries, via Skyfield load_constellation_map (Roman 1987 lookup).",https://www.iau.org/public/themes/constellations/
 Hipparcos,"ESA (1997), The Hipparcos Catalogue, positions and proper motions of Regulus (HIP 49669), Spica (HIP 65474), Algol (HIP 14576).",
 GeoNames,"GeoNames cities with population >= 1000, CC BY 4.0 (geonamescache package).",https://www.geonames.org
+Open-Meteo elevation,"Open-Meteo Elevation API (free for non-commercial use, CC BY 4.0), from the Copernicus DEM GLO-90 (90 m): © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the European Union and ESA. Only the coordinates of the chosen place are sent.",https://open-meteo.com/en/docs/elevation-api
 Lagoon Nebula (background),"Hubble's 28th birthday picture: The Lagoon Nebula (heic1808a), 2018. Credit: NASA, ESA, STScI. Creative Commons Attribution 4.0 International. Used as the background; the colour scheme was taken from it.",https://esahubble.org/images/heic1808a/
