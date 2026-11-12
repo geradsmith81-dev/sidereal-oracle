@@ -359,17 +359,22 @@ def _valid_birth(b):
 
 def _valid_home(h):
     """The place where the user lives (the starting place on the Chart and Auspicious dates pages), or None.
-    Fields: name, country, lat, lon, tz. It is kept in the profile only - never in a friend card."""
+    Fields: name, country, lat, lon, tz, elev (ground, m), src ('town' from the search, 'gps' from the device's
+    position). It is kept in the profile only - never in a friend card."""
     if not isinstance(h, dict):
         return None
     try:
         lat, lon = float(h['lat']), float(h['lon'])
         if not (-90 <= lat <= 90 and -180 <= lon <= 180):
             return None
-        elev = float(h.get('elev') or 0.0)
-        elev = round(min(max(elev, -500.0), 9000.0))      # metres above sea level (looked up or typed in)
+        # ground height in metres above sea level (looked up or typed in). None = not known: it is looked up again.
+        # Values below places.ELEV_MIN are the -500 m that a bug put into the box (user report), not real heights.
+        elev = h.get('elev')
+        elev = None if elev is None or float(elev) < places.ELEV_MIN - 1 else \
+            round(min(max(float(elev), places.ELEV_MIN), places.ELEV_MAX))
         return dict(name=clean_name(h['name'])[:MAX_NAME], country=clean_name(h.get('country', ''))[:MAX_NAME],
-                    lat=round(lat, 5), lon=round(lon, 5), tz=str(h['tz'])[:64] if h.get('tz') else None, elev=elev)
+                    lat=round(lat, 5), lon=round(lon, 5), tz=str(h['tz'])[:64] if h.get('tz') else None, elev=elev,
+                    src='gps' if h.get('src') == 'gps' else 'town')
     except (KeyError, ValueError, TypeError):
         return None
 
@@ -607,6 +612,121 @@ def parse_card(data):
     return dict(name=name, birth=birth, avatar=av)
 
 
+# ---------------------------------------------------------------- "Use my location" for where you live (user request)
+# Afterglow's rules: the device is asked for its position (GPS on a phone, Wi-Fi position on a computer) - once by
+# itself per visit when no home place is set yet, and whenever "Use my location" is pressed. The town and time zone
+# come from the nearest gazetteer place, the ground height from open elevation data at the exact position
+# (places.lookup_elevation); the device's own altitude is shown but not used (it is height above the GPS ellipsoid,
+# which can differ from sea-level height by tens of metres). The position, rounded to about 10 m, is kept only in the
+# profile (on this device) and never goes into a friend card.
+GPS = 'pf_gps'
+_LOC_JS = r"""
+function locate(S, auto) {
+  if (!('geolocation' in navigator)) {
+    S.status.textContent = 'This browser cannot share its location. Type your town or city instead.';
+    return;
+  }
+  S.status.textContent = auto ? 'Finding your location... (allow location if your browser asks)'
+                              : 'Asking your device for its position...';
+  navigator.geolocation.getCurrentPosition((p) => {
+    const c = p.coords;
+    S.status.textContent = `Found you (within ${Math.round(c.accuracy)} m).`;
+    S.send('pick', { lat: c.latitude, lon: c.longitude, acc: c.accuracy, alt: c.altitude,
+                     alt_acc: c.altitudeAccuracy, src: 'gps', ts: Date.now() });
+  }, (err) => {
+    let why;
+    if (err.code === 1) {
+      why = (window.top !== window.self)
+        ? 'The page frame blocked location. Open the app full-screen (not inside another page), then press "Use my location".'
+        : 'Location permission was refused. Allow location for this site in the browser settings, then press "Use my location".';
+    } else if (err.code === 3) {
+      why = 'The device took too long to find you. Try again, or type your town or city.';
+    } else {
+      why = 'Your position is not available right now. Press "Use my location" to try again, or type your town or city.';
+    }
+    S.status.textContent = why;
+  }, { enableHighAccuracy: true, timeout: 25000, maximumAge: 0 });
+}
+
+function autoLocate(S) {
+  if (S.autoTried) return;
+  S.autoTried = true;
+  try {
+    if (sessionStorage.getItem('lilly-home-auto-located')) return;
+    sessionStorage.setItem('lilly-home-auto-located', '1');
+  } catch (e) { /* storage blocked: still try once for this page */ }
+  const go = () => locate(S, true);
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'geolocation' }).then((st) => {
+      if (st.state === 'denied') {
+        S.status.textContent = 'Location is blocked for this site in the browser settings. Type your town or city.';
+      } else go();
+    }).catch(go);
+  } else go();
+}
+
+export default function (component) {
+  const { data, parentElement, setTriggerValue } = component;
+  const d = data || {};
+  let S = parentElement.__lillyLocate;
+  if (!S || !S.root.isConnected) {
+    const root = document.createElement('div');
+    root.className = 'lilly-loc';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'lilly-loc-btn';
+    btn.textContent = '\u{1F4CD} Use my location';
+    const status = document.createElement('div');
+    status.className = 'lilly-loc-status';
+    root.appendChild(btn);
+    root.appendChild(status);
+    parentElement.appendChild(root);
+    S = { root, btn, status, autoTried: false };
+    btn.addEventListener('click', () => locate(S, false));
+    parentElement.__lillyLocate = S;
+  }
+  S.send = setTriggerValue;
+  if (d.auto) autoLocate(S);
+}
+"""
+_LOC_CSS = """
+.lilly-loc-btn { width: 100%; min-height: 2.6rem; border-radius: 0.5rem; background-color: #0b111c !important;
+  color: #f7f1ea !important; border: 1px solid #4f6789 !important; font: inherit; cursor: pointer; padding: 0.4rem 0.8rem; }
+.lilly-loc-btn:hover { border-color: #f2994a !important; }
+.lilly-loc-status { color: #c4ccdb !important; font-size: 0.85rem; margin-top: 0.35rem; min-height: 0.2rem; }
+"""
+_locator = None
+try:
+    _locator = st.components.v2.component('lilly_home_locator', js=_LOC_JS, css=_LOC_CSS, isolate_styles=False)
+except Exception:                     # an older Streamlit without st.components.v2: the button is simply not offered
+    _locator = None
+
+
+def _on_locate():
+    v = st.session_state.get('pf_locate')
+    p = v.get('pick') if hasattr(v, 'get') else None
+    if not isinstance(p, dict):
+        return
+    try:
+        lat, lon = float(p['lat']), float(p['lon'])
+    except (KeyError, TypeError, ValueError):
+        return
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        return
+    num = lambda x: float(x) if isinstance(x, (int, float)) and not isinstance(x, bool) else None
+    st.session_state[GPS] = dict(lat=round(lat, 4), lon=round(lon, 4), acc=num(p.get('acc')), alt=num(p.get('alt')))
+    st.session_state.pop('pf_home_elev_for', None)
+
+
+def _start_edit():
+    """Fresh state for the profile window each time it is opened (a cancelled edit leaves nothing behind)."""
+    for k in (GPS, 'pf_home_elev_for', 'pf_home_elev', 'pf_home_elev_src'):
+        st.session_state.pop(k, None)
+    h = get().get('home') or {}
+    if h.get('src') == 'gps':
+        st.session_state[GPS] = dict(lat=h['lat'], lon=h['lon'], acc=None, alt=None, saved=True)
+
+
 # ---------------------------------------------------------------- the dialog
 def _date_inputs(prefix, default):
     y0, m0, d0 = default.year, default.month, default.day
@@ -652,7 +772,7 @@ def edit_dialog():
         unknown = st.checkbox('I do not know my birth time', value=not b0.get('time_known', True), key='pf_unknown')
         btime = dt.time(12, 0) if unknown else st.time_input(
             'Birth time (local clock)', dt.time.fromisoformat(b0['time']) if b0 else dt.time(12, 0), step=60, key='pf_time')
-        q = st.text_input('Birthplace', b0.get('place', '').split(',')[0] if b0 else '', key='pf_place',
+        q = st.text_input('Birthplace (type in city name and hit "Save", city will automatically populate after)', b0.get('place', '').split(',')[0] if b0 else '', key='pf_place',
                           placeholder='e.g. London, Mortlake, Kraków')
         hits = places.search(q, n=10) if q else []
         if q and not hits:
@@ -675,34 +795,74 @@ def edit_dialog():
         elif b0 and not q:
             birth = p['birth']
     st.markdown('**Where you live** (the starting place on the Chart and Auspicious dates pages)')
+    ss = st.session_state
     h0 = p.get('home') or {}
-    hq = st.text_input('Your town or city', h0.get('name', ''), key='pf_home',
-                       placeholder='e.g. Mortlake, Kraków, Chicago')
-    home = None
-    hhits = places.search(hq, n=10) if hq else []
-    if hq and not hhits:
-        st.warning('No match in the gazetteer (places with at least 1,000 inhabitants). Try a nearby town.')
-    if hhits:
-        same_h = [k for k, hh in enumerate(hhits) if h0 and abs(hh['lat'] - h0['lat']) < 1e-3 and abs(hh['lon'] - h0['lon']) < 1e-3]
-        j = st.selectbox('Matches', range(len(hhits)), index=same_h[0] if same_h else 0,
-                         format_func=lambda k: places.label(hhits[k]), key='pf_home_pick')
-        hh = hhits[j]
-        same_place = bool(h0) and abs(hh['lat'] - h0['lat']) < 1e-3 and abs(hh['lon'] - h0['lon']) < 1e-3
-        # filled in from a terrain map (Open-Meteo) when another town is chosen (user request); saved value kept
+    gps = ss.get(GPS)
+    if _locator is not None:
+        _locator(data=dict(auto=not h0 and not gps and not ss.get('pf_home')), key='pf_locate',
+                 on_pick_change=_on_locate, width='stretch', height='content')
+    home, hh = None, None
+    if gps:
+        near, dkm = places.nearest(gps['lat'], gps['lon'])
+        hh = dict(name=near['name'], country=near['country'], lat=gps['lat'], lon=gps['lon'], tz=near['tz'])
+        how = ('Saved position' if gps.get('saved') else 'Your position'
+               + (f" (within {gps['acc']:.0f} m)" if gps.get('acc') else ''))
+        st.caption(f"{how}: {gps['lat']:.4f}°, {gps['lon']:.4f}°, {dkm:.1f} km from {near['name']}, {near['country']} "
+                   f"(the town and time zone used).")
+        st.button('Type a town or city instead', key='pf_gps_off', icon=':material/search:', width='stretch',
+                  on_click=lambda: ss.pop(GPS, None))
+    else:
+        hq = st.text_input('Your town or city', h0.get('name', ''), key='pf_home',
+                           placeholder='e.g. Mortlake, Kraków, Chicago')
+        hhits = places.search(hq, n=10) if hq else []
+        if hq and not hhits:
+            st.warning('No match in the gazetteer (places with at least 1,000 inhabitants). Try a nearby town.')
+        if hhits:
+            same_h = [k for k, x in enumerate(hhits) if h0 and abs(x['lat'] - h0['lat']) < 1e-3 and abs(x['lon'] - h0['lon']) < 1e-3]
+            j = st.selectbox('Matches', range(len(hhits)), index=same_h[0] if same_h else 0,
+                             format_func=lambda k: places.label(hhits[k]), key='pf_home_pick')
+            hh = hhits[j]
+    if hh:
+        tol = 2e-4 if gps else 1e-3
+        same_place = bool(h0) and abs(hh['lat'] - h0['lat']) < tol and abs(hh['lon'] - h0['lon']) < tol
+        # ground height (Afterglow's rules, user request): the saved value for the same place, else looked up at the
+        # exact point from open elevation data. Also when the box itself was dropped (Streamlit forgets a widget's
+        # value while the window is closed, and the box then came back at its lowest value, -500 m: user report).
         here_h = (round(hh['lat'], 4), round(hh['lon'], 4))
-        if st.session_state.get('pf_home_elev_for') != here_h:
-            st.session_state['pf_home_elev_for'] = here_h
-            saved = float(h0.get('elev') or 0.0) if same_place else 0.0
-            st.session_state['pf_home_elev'] = saved or places.elevation(hh['lat'], hh['lon']) or 0.0
-        h_elev = st.number_input('Elevation of where you live (metres above sea level)', -500.0, 9000.0,
-                                 step=10.0, key='pf_home_elev',
-                                 help='Filled in from a terrain map (Open-Meteo, Copernicus DEM, 90 m) when you choose '
-                                      'the town; type over it if you know better. The Chart, Auspicious dates and '
-                                      'Friends pages start at this elevation when the place is your home town. '
-                                      'It changes sunrise, and so the planetary hours, slightly.')
+        if ss.get('pf_home_elev_for') != here_h or 'pf_home_elev' not in ss:
+            ss['pf_home_elev_for'] = here_h
+            saved = h0.get('elev') if same_place else None
+            if saved is not None and float(saved) < places.ELEV_MIN - 1:   # the old -500 m bug value: look it up
+                saved = None
+            if saved is not None:
+                v, src = float(saved), 'saved'
+            else:
+                v, src = places.lookup_elevation(hh['lat'], hh['lon'])
+            ss['pf_home_elev'] = float(v or 0.0)
+            ss['pf_home_elev_src'] = src or 'none'
+        src = ss.get('pf_home_elev_src', 'none')
+        h_elev = st.number_input('Ground elevation where you live (metres above sea level)', places.ELEV_MIN,
+                                 places.ELEV_MAX, step=1.0, format='%.0f', key='pf_home_elev',
+                                 help='Filled in by itself for the exact spot from open elevation data (AWS Terrain '
+                                      'Tiles: SRTM, USGS 3DEP, GMTED2010 and others; Open-Meteo over water or when '
+                                      'they cannot be reached). Type over it if you know better. The charts are '
+                                      f'worked out for your eyes, {places.EYE_HEIGHT_M:g} m above the ground. The '
+                                      'Chart, Auspicious dates and Friends pages start at this elevation when the '
+                                      'place is where you live. It changes sunrise, and so the planetary hours, '
+                                      'slightly.')
+        st.caption({'tiles': 'Ground height read for this spot from open elevation data (AWS Terrain Tiles).',
+                    'open-meteo': 'Ground height read for this spot from a terrain map (Open-Meteo, Copernicus DEM).',
+                    'saved': 'Ground height as saved in your profile.',
+                    'none': 'The elevation data could not be reached, so this starts at 0 m. Type it in if you '
+                            'know it.'}.get(src, '')
+                   + f' Eye level used for the charts: {float(h_elev) + places.EYE_HEIGHT_M:.1f} m.')
+        if gps and gps.get('alt') is not None:
+            st.caption(f"Your device reported an altitude of {gps['alt']:.0f} m. Phones give height above the GPS "
+                       "ellipsoid, which can differ from sea-level height by tens of metres, so the elevation data "
+                       "is used unless you type the ground height yourself.")
         home = _valid_home(dict(name=hh['name'], country=hh['country'], lat=hh['lat'], lon=hh['lon'], tz=hh['tz'],
-                                elev=h_elev))
-        st.caption(f"{hh['name']}, {hh['country']} · {hh['lat']:.3f}°, {hh['lon']:.3f}° · {home['elev']:.0f} m · "
+                                elev=h_elev, src='gps' if gps else 'town'))
+        st.caption(f"{hh['name']}, {hh['country']} · {hh['lat']:.4f}°, {hh['lon']:.4f}° · ground {home['elev']:.0f} m · "
                    f"time zone {hh['tz']}. Not included in your friend card.")
     remember = None
     if LOCAL:
@@ -741,6 +901,7 @@ def sidebar_card():
         else:
             label = 'Add your name and picture'
         if st.button(label, key='profile_btn', icon=':material/account_circle:', width='stretch'):
+            _start_edit()
             edit_dialog()
         # one click: the user's friend card file, to send to friends (also on the Friends page, with more choices)
         if p['name'] and p['birth']:
