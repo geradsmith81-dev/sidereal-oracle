@@ -1,0 +1,318 @@
+SIDEREAL ORACLE - WILLIAM LILLY'S READING   (app for Windows)
+=============================================================
+
+This is the companion to your Enochian sidereal chart. It uses the same star
+chart (the real IAU constellations, at their true widths, with NASA JPL
+planet positions) and the same place search. Its background is the Hubble
+Space Telescope's picture of the Lagoon Nebula, and its colours (slate blue,
+teal, flame orange and peach) were taken from that picture. The
+reading comes from William Lilly's "Christian Astrology" (London, 1647),
+the classic English textbook of traditional European astrology.
+
+You do not need to know any programming. If Python is already installed for
+your first app, skip Step 2.
+
+
+PART 1 - ONE-TIME SETUP  (about 10 minutes)
+-------------------------------------------
+
+Step 1. Unzip this folder.
+   - Find the downloaded file "SiderealLillyApp.zip" (usually in Downloads).
+   - Right-click it and choose "Extract All...", then click "Extract".
+   - Move the extracted folder somewhere easy to find, for example
+     C:\SiderealLillyApp (next to your C:\SiderealEnochianApp).
+     Do NOT run the app from inside the zip.
+
+Step 2. Install Python (free) - only if you have not already.
+   - Go to  https://www.python.org/downloads/
+   - Click the large yellow "Download Python 3.x" button and open the installer.
+   - IMPORTANT: on the first screen, tick "Add python.exe to PATH".
+   - Click "Install Now", then "Close".
+
+Step 3. Start the app for the first time.
+   - Open the SiderealLillyApp folder and double-click  "Start app.bat".
+   - If Windows shows "Windows protected your PC": click "More info", then
+     "Run anyway".
+   - A black window says "First-time setup" and downloads the app's
+     components (2-5 minutes). Wait until the app's window opens by itself.
+
+Step 4. Make the app icon (once).
+   - In the SiderealLillyApp folder, double-click  "Create desktop icon.bat".
+     (If Windows shows "Windows protected your PC": "More info" > "Run anyway".)
+   - An icon called  "The Sidereal Oracle"  (an orange astrolabe) appears
+     on your Desktop and in the Start menu.
+   - To pin it: open the Start menu, find "The Sidereal Oracle",
+     right-click it and choose "Pin to Start", or "More" > "Pin to taskbar".
+   - If you made the icon with an earlier version (called "Sidereal Oracle"
+     or "William Lilly's Sidereal Chart"), it is replaced by the new one.
+   - If you ever move the SiderealLillyApp folder, double-click
+     "Create desktop icon.bat" again (the old icon will no longer work).
+
+
+PART 2 - USING THE APP  (every time)
+------------------------------------
+
+1. Double-click the icon "The Sidereal Oracle" (or "Start app.bat").
+   The app opens in its own window, without browser tabs or address bar
+   (a Microsoft Edge "app" window; if Edge is missing, your usual browser
+   opens instead). Its address is http://localhost:8504 (8504, so it can run
+   at the same time as your Enochian app on 8501).
+2. A black window starts as well (minimised on the taskbar when you use the
+   icon). It runs the app: KEEP IT OPEN while you use the app. When you have
+   finished, close the app window AND the black window.
+3. In the left sidebar: type the Year (1850-2149), pick the Month and Day,
+   set the local clock time (24-hour clock, e.g. 14:30 for half past two in
+   the afternoon), search a place name and pick the right match. The place
+   starts as your town (see "YOUR PROFILE" below), and the date and time
+   start at the present moment there. The "Now" button beside "Date" brings
+   the date and time back to the present (in the chosen place's local time).
+   The UTC offset is filled in automatically.
+4. Two options follow Lilly's own text:
+   - "Sun-beams rule": Lilly's table (the default), or the way he scored
+     his own worked example.
+   - "Orbs": Lilly's own orb sizes (the default), or those he gives
+     "according to others".
+5. The page shows: the chart wheel with Lilly's houses (Regiomontanus) and
+   aspects; the planetary day and hour; the Lord of the Ascendant; a score
+   for every planet from Lilly's table of fortitudes and debilities; the
+   FORECAST box (Lilly's "Considerations before Judgment"); each planet in
+   Lilly's own words; and "Sources and certainty" at the bottom. The
+   Forecast can be saved with "Download forecast (.txt)".
+   The button "What does this mean? (plain English)" in the Forecast box
+   opens a window that explains the Forecast without technical terms. It
+   also grades the moment (Best, Good, Fair or Avoid) for the four
+   undertakings of the Auspicious dates page: romance, friendship, life
+   transition and project, compared with every hour of the same week.
+   The first time it opens it takes a few seconds.
+6. To stop: close the browser tab, then close the black window.
+
+
+THE "AUSPICIOUS DATES" PAGE
+---------------------------
+Click "Auspicious dates" at the top of the left sidebar. This page searches
+a period (7 to 92 days) for good moments for:
+   - Romance                   (Lilly's 7th house; Venus): beginning a new
+                               romance, or the best times to connect with
+                               your current partner
+   - Friendship                (11th house; Jupiter): finding new
+                               connections, or the best times to connect
+                               with your current friends
+   - a life transition         (4th house, "the end of any thing"; the Moon)
+   - a project or enterprise   (10th house, "the Trade any one useth"; Mercury)
+Pick the undertaking, the first date, the number of days, the hours of the
+day you would consider, and the place. Then press "Find auspicious times"
+(about 20 seconds per month). You get:
+   - a calendar: one row per day, coloured Best / Good / Fair / Avoid
+     through the day;
+   - the best windows, with the reasons for each, and the chart wheel for
+     any window you choose;
+   - a day-by-day list;
+   - downloads: the best windows as a calendar file (.ics, opens in
+     Outlook, Google Calendar or Apple Calendar), and every moment as a
+     spreadsheet (.csv).
+How it judges: Lilly wrote no separate book of elections. He said a
+student of his book could "frame his owne Figure of Elections". So the page
+uses his rules: the Lord of the Ascendant and the lord of the house of the
+matter coming together by a good aspect ("perfection", pp.124-126), their
+strength (p.115), the Moon, and his "Considerations before Judgment"
+(pp.121-123), which mark a moment Avoid (for example the Moon void of
+course). The points that add these up are the app's choice; they are in
+data\election_rules.csv and can be edited like the Forecast wording.
+
+
+YOUR PROFILE (name and picture)
+-------------------------------
+At the top of the left sidebar, click "Add your name and picture". In the
+box that opens, type your name, choose a picture (JPG, PNG or WEBP), and
+click "Save". The page titles then use your name, for example
+"Gerad's auspicious dates", with your picture beside them (the home page
+is always called "The Sidereal Oracle"). Click
+"Edit profile" later to change or remove them.
+- Tick "Add my birth date, time and place" to add your birth details
+  (tick "I do not know my birth time" if you don't know it). They are
+  used by "Include my birth chart" on the Auspicious dates page and by
+  the Friends page.
+- Under "Where you live", type your town and pick it from "Matches".
+  The Chart and Auspicious dates pages then start with your town as
+  the place. (Without it, they start with the main city of your
+  computer's time zone, and say so.) Your town is not put in your
+  friend card.
+- The picture is cropped to a square from its centre and shown in a circle.
+- On this computer, your name and picture are saved in the folder
+  "profile" inside the app folder. They never leave your computer. To
+  reset, delete that folder while the app is closed.
+- In the online version, the name and picture are kept only while the
+  browser tab is open. Nothing is stored on the server, because every
+  visitor shares it.
+
+
+THE "ASTROSOPHY BIRTH CHART" PAGE
+---------------------------------
+Click "Astrosophy Birth Chart" in the left sidebar. It is the Astrosophy Birth
+Chart app as one page: the real sky among the 13 IAU zodiac constellations
+(Ophiuchus included), read through Rudolf Steiner's indications and the
+astrosophy of Elisabeth Vreede and Willi Sucher. It opens at your own chart
+when your profile has your birth details ("Whose chart?" switches to another
+birth). Tabs: Birth chart (with "What does this mean?"), Prenatal epoch, Life
+rhythms, Biography chart (your own notes, year by year; kept like your
+profile and never put into a friend card), Today's sky, Sources & caveats.
+Each reading is tagged with whose idea it is. The chart is geocentric, so the
+page has no elevation box. Its files are in the folder "astrosophy".
+
+
+THE "FRIENDS" PAGE
+------------------
+Compare your chart with a friend's and find times that are good for both
+of you. There are no accounts: you exchange "friend cards" yourselves.
+1. Share: click "Download my friend card" - in the sidebar under your
+   name (on every page, once your birth details are in your profile), or on
+   the Friends page - and send the small .lillycard file (it lands in your
+   Downloads folder) to your friend by e-mail or message (or, on the
+   Friends page, copy the text code and paste it into a message). The card holds your
+   name, birth date, time and place, and your picture if you tick it.
+   Send it only to people you want to have these details.
+2. Add: when a friend sends you their card, upload the file (or paste
+   the code) under "Add a friend", check the preview, and click "Add".
+3. Compare: choose the friend. You see how your two birth charts agree
+   (Ptolemy's rule, the source Lilly draws on: compare the Sun, Moon,
+   Ascendant and Part of Fortune of both), and a calendar of times good
+   for BOTH of you: each moment counts only as well as it does for the
+   one of you it suits less. A table shows where your readings differ.
+   The joint times can be downloaded as a calendar file (.ics).
+On this computer your friends are saved in the "profile" folder; online
+they are kept only while the browser tab is open.
+
+
+THE "ABOUT" PAGE
+----------------
+Explains in plain words how the app works, where the planet positions come
+from, how Lilly's book is used, what was checked, and what is the app's own
+choice. It can show two pictures from the 1647 book: Lilly's engraved
+portrait and the title page. To add them:
+1. Open  https://archive.org/details/b30338724  (the Wellcome Collection
+   copy of Christian Astrology, 1647, public domain).
+2. In the page viewer, turn to the first pages: the portrait of Lilly and
+   the title page come before the text.
+3. Right-click each page picture, choose "Save image as...", and save it in
+   this app's "assets" folder with exactly these names:
+      lilly_portrait.jpg      and      lilly_title_page.jpg
+4. Start the app again. The About page shows them by itself.
+
+
+HOW TO READ THE SCORES
+----------------------
+Lilly adds points for each strength of a planet (in its own sign +5, in the
+Ascendant or Midheaven +5, swift +2 ...) and takes away points for each
+weakness (retrograde -5, combust -5, peregrine -5 ...). He then subtracts
+the smaller total from the larger, "and so judge" (p.181). The number next
+to each planet on the wheel is that net score.
+
+
+HOW THE SIDEREAL SKY IS FITTED TO LILLY
+---------------------------------------
+Lilly used 12 equal signs. This app uses the real constellations, which are
+unequal, and includes Ophiuchus. So:
+- a planet in the constellation Leo is read as Lilly's Leo;
+- Lilly's degree rules (terms and faces) are stretched to each
+  constellation's real width;
+- Ophiuchus has no sign in Lilly, so a planet there counts as "peregrine".
+These adaptations are labelled "app rule" wherever they are used.
+
+
+ON A PHONE OR TABLET
+--------------------
+Once the app is online (see DEPLOY GUIDE.txt inside the GitHub zip), it can be
+opened in a phone's web browser. On a phone it switches to a "phone layout" by itself:
+ - the date, time and place boxes are in a fold-out panel at the top of the
+   page (tap it to open; tap again to close and see the chart);
+ - the Auspicious dates and Friends calendars come first as a list of the
+   best times for each day, in large text; the coloured grid follows, drawn
+   at phone size;
+ - the chart wheel shows each planet by its symbol with its score beside it
+   (the key is written underneath);
+ - tables show their main columns only, in black text on a light parchment
+   background;
+ - all other text except the headings is white, for easier reading on a small
+   screen (headings stay peach).
+To start it from an icon on the phone, see "ADD THE APP TO YOUR PHONE'S HOME
+SCREEN" in DEPLOY GUIDE.txt (inside the GitHub zip).
+The switch "Phone layout" in the sidebar (open the sidebar with the arrow at
+the top left) turns this on or off by hand. Computers look as before.
+To preview the phone layout on your PC: start the app, press F12 in Chrome or
+Edge, then Ctrl+Shift+M, and choose a phone (e.g. "iPhone 12 Pro") at the top.
+Press F5 to reload so the app notices the 'phone'.
+
+
+CHANGING THE WORDING (no programming needed)
+--------------------------------------------
+The Forecast sentences are in  data\forecast_rules.csv.  Close the app,
+open the file in Excel or Notepad, and edit the "text" column (or the "plain"
+column, which is the plain-English wording shown in the explanation window;
+data\election_rules.csv has the same two columns). Keep anything
+in curly brackets, e.g. {lord} or {planet}; the app fills those in. To
+switch a rule off, change "enabled" from True to False. Save the file (keep
+the CSV format), then start the app again. Lilly's tables are also in the
+data folder.
+
+
+CHECKS THAT WERE RUN
+--------------------
+- Planet positions agree with NASA JPL Horizons to better than 0.4
+  arcseconds (the Moon in the far future: 6 arcseconds), and every
+  constellation agrees.
+- On Lilly's own example chart (16 July 1634), the app reproduces his
+  planetary day and hour, his Part of Fortune, and his strength totals for
+  5 of the 7 planets. For the other two, Lilly left out an item that his own
+  table prescribes.
+
+
+TROUBLESHOOTING
+---------------
+- "Python was not found": repeat Step 2 with "Add python.exe to PATH"
+  ticked, restart the computer and try again.
+- First-time setup failed: check the internet connection and double-click
+  "Start app.bat" again (it starts the setup afresh).
+- The browser shows "This site can't be reached": wait 10 seconds and
+  refresh the page. Check that the black window is open.
+- The black window closes at once: make sure you extracted the zip first
+  and are double-clicking "Start app.bat" inside the extracted folder.
+- Place not found: tick "Enter coordinates manually".
+
+
+WHAT IS IN THIS FOLDER
+----------------------
+Start app.bat           - double-click to set up (first time) and start the app
+Create desktop icon.bat - makes the app icon on the Desktop and in the Start menu
+tools\make_shortcut.ps1 - used by "Create desktop icon.bat"
+assets\lilly_icon.ico   - the app icon (also lilly_icon.png, used in the app window)
+app.py                  - starts the app and its five pages
+sidereal_engine.py      - astronomy: positions, houses, planetary hours, stars
+lilly_layer.py          - Lilly's dignities, scores and aspects
+forecast.py             - composes the Forecast box
+plain_forecast.py       - the "What does this mean?" window (plain English)
+device.py               - the phone layout (switches on by itself on phones)
+electional.py           - searches a period for auspicious moments (Auspicious dates page)
+chart_page.py, elections_page.py - the two pages; inputs.py - shared place search
+user_profile.py         - your profile (name, picture, birth details) and friend cards
+natal.py                - birth charts: agreement with a moment, and between two people
+friends_page.py         - the Friends page; calendar_view.py - shared calendar drawing
+about_page.py           - the About page
+astrosophy_page.py      - the Astrosophy Birth Chart page
+astrosophy\            - its calculations, drawings and correspondence tables (astrosophy\data)
+profile\ (after you save a profile) - your saved profile and friends
+chart_wheel.py          - draws the chart wheel
+places.py               - place-name search and time zones
+theme.py                - the colour scheme ("Lagoon", from the Hubble picture) and page styling
+assets\background.jpg   - starfield background, made by the app's author in code
+                          (replace with any .jpg of the same name to change it)
+data\*.csv              - Lilly's tables, the Forecast wording, sources, uncertainty log
+ephem\de440s.bsp        - NASA JPL planetary position data
+requirements.txt        - components installed on first run
+.venv\ (after first run) - the app's private copy of Python components
+
+This reading is traditional symbolism, offered for study and reflection.
+Controlled studies have not found astrological charts to be predictive.
+
+Credits: Lilly's text from the Wellcome Library copy of the 1647 edition
+(Internet Archive, public domain); planetary data NASA JPL (DE440s) via
+Skyfield; place data GeoNames (CC BY 4.0); time zones IANA tz database.

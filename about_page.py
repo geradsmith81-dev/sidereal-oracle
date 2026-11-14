@@ -93,6 +93,13 @@ owne Figure of Elections". So the page uses his rules for when a matter is "brou
 strength of the planets involved, and his cautions, such as a "void of course" Moon. With your birth details it also
 checks how each moment suits *your* birth chart.
 
+**Astrosophy Birth Chart.** A second way of reading a birth chart, from the Astrosophy Birth Chart app: the real
+sky among the 13 IAU zodiac constellations (Ophiuchus included), read through Rudolf Steiner's indications and the
+*astrosophy* of Elisabeth Vreede and Willi Sucher. Its tabs give the birth chart (with a plain-English summary), the
+prenatal epoch after Sucher's Hermetic Rule, the life rhythms in seven-year periods, a Biography chart for your own notes
+year by year, today's sky, and the sources. Each reading carries a tag saying whose idea it is: Steiner's, Vreede's or
+Sucher's, or a rule of the app. It uses your profile's birth details and the same NASA JPL file as the other pages.
+
 **Friends.** You and a friend exchange *friend cards* (small files you send each other yourselves). The page compares
 your two birth charts by the rule of the ancient astronomer **Ptolemy**, which Lilly draws on. It looks at the Sun,
 Moon, Ascendant and Part of Fortune in both charts. It then finds times good for both of you: a moment counts only as

@@ -79,6 +79,7 @@ getattr(user_profile, 'device_sync', lambda: None)()
 getattr(user_profile, 'incoming_card', lambda: None)()
 pg = st.navigation([st.Page(os.path.join(HERE, 'chart_page.py'), title='Chart', icon=':material/brightness_7:', default=True),
                     st.Page(os.path.join(HERE, 'elections_page.py'), title='Auspicious dates', icon=':material/calendar_month:'),
+                    st.Page(os.path.join(HERE, 'astrosophy_page.py'), title='Astrosophy Birth Chart', icon=':material/auto_awesome:'),
                     st.Page(os.path.join(HERE, 'friends_page.py'), title='Friends', icon=':material/group:'),
                     st.Page(os.path.join(HERE, 'about_page.py'), title='About', icon=':material/menu_book:')])
 user_profile.sidebar_card()
@@ -93,11 +94,19 @@ try:
     pg.run()
 except ModuleNotFoundError as e:
     # a page needs one of the app's own files that is missing (not uploaded with the rest)
-    if not (e.name and os.path.exists(os.path.join(HERE, 'app.py')) and not os.path.exists(os.path.join(HERE, e.name + '.py'))
-            and e.name in ('glossary', 'qr_code')):
-        raise
-    st.error(f"**A file of the app is missing:** `{e.name}.py`. Upload all the files from the newest GitHub zip again "
-             f"(including `{e.name}.py`), then click **Manage app** (bottom right) > the three dots > **Reboot app**.")
+    if (e.name or '').split('.')[0] == 'astrosophy':
+        # the Astrosophy Birth Chart page needs the folder 'astrosophy' (with its own 'data' folder inside)
+        st.error("**A folder of the app is missing or incomplete:** `astrosophy` (needed for the Astrosophy Birth "
+                 f"Chart page; missing: `{e.name}`). Upload the whole folder `astrosophy` from the newest GitHub zip, "
+                 "with the `data` folder inside it, then click **Manage app** (bottom right) > the three dots > "
+                 "**Reboot app**. On your computer: copy all the files and folders from the newest zip into the app "
+                 "folder, choosing **Replace**.")
+    else:
+        if not (e.name and os.path.exists(os.path.join(HERE, 'app.py')) and not os.path.exists(os.path.join(HERE, e.name + '.py'))
+                and e.name in ('glossary', 'qr_code')):
+            raise
+        st.error(f"**A file of the app is missing:** `{e.name}.py`. Upload all the files from the newest GitHub zip again "
+                 f"(including `{e.name}.py`), then click **Manage app** (bottom right) > the three dots > **Reboot app**.")
 except AttributeError as e:
     # a page needs something that is not in one of the app's files: that file is older than the page
     m = re.match(r"module '(\w+)' has no attribute '(\w+)'", str(e))

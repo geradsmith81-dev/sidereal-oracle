@@ -1,0 +1,25 @@
+key,text
+intro,"Steiner described twelve ways of seeing the world, which he called world-views, and seven moods in which a soul can hold them. He linked the world-views with the twelve constellations of the zodiac and the moods with the seven planets. This window puts the pictures that the real sky shows at this birth into everyday words. Under each part, Show the working gives the original terms and where they come from."
+reflection,"These are pictures for reflection. Steiner himself warned that a person's inner constellation need not match the birth chart, so none of this is a statement about {who_obj}."
+sidereal_note,"These are the real constellations in the sky. They have drifted away from the star signs of newspaper astrology, which are tied to the seasons: there, the Sun would be in {tropical}."
+pair,"{mood}, in the light of {world}"
+ophiuchus,the passage from looking for the forces at work behind what we see to seeing the world as many individual centres of being
+off_zodiac,"In the actual sky {body} is just outside the band of the zodiac, in {true}. The reading uses the zodiac constellation at its position along the band."
+rising,{rising} was rising on the eastern horizon. Sucher saw the rising point as the doorway through which the life forces enter into earthly existence.
+epoch,"Willi Sucher used an old rule, the Hermetic Rule, to find a moment about nine months before birth, called the prenatal epoch. For this birth it falls on {date}, {days} days before birth. The rule says that the Moon then stood where the {target} is at birth."
+epoch_cycles,"Between the epoch and birth the Moon went round the zodiac about {n} times. Sucher read each round as a picture of one seven-year stretch of the coming life: the first round for ages 0 to 7, the second for 7 to 14, and so on."
+birth_time_check,"A check on the birth time: in the older form of the rule, the {angle} at the epoch should fall on the birth Moon. Here it is {deg}° away. Close to 0° means the birth time and the rule agree; a large figure means they do not. The app never changes the birth time that was entered."
+epoch_none,"The prenatal epoch could not be worked out for this date, so this part is left out."
+now,"Steiner described life in seven-year periods, each linked with a planet. At age {age}, {who_subj} {are} in the {sphere} period (ages {a} to {b}): {plain}."
+now_beyond,"At age {age}, {who_subj} {are} past the seven planetary periods, which end at 63."
+now_future,"This moment lies in the future, so there is no life rhythm to show yet."
+now_events,In Sucher's prenatal graph this period matches round {k} of the Moon before birth. In that round the planets did this:
+now_events_none,"In Sucher's prenatal graph this period matches round {k} of the Moon before birth, in which no planet met another, changed constellation or turned."
+mercury_venus_note,"Steiner remarked that the names Mercury and Venus were exchanged in older tradition, so which planet belongs to this period is an open question."
+morning_evening,"{list}. Elisabeth Vreede pointed out that Venus as a morning star and as an evening star shows two different sides, and the same is true of Mercury."
+morning,{body} rises before the Sun (a morning star)
+evening,{body} sets after the Sun (an evening star)
+outer,"Uranus, Neptune and Pluto appear on the chart, but Steiner's seven moods belong to the seven classical planets, so they get no reading here."
+honesty,"The positions are exact, from NASA JPL. The meanings are a spiritual tradition, and controlled studies have not found that birth charts predict personality or life events."
+wording,"The everyday wording is the app's own, kept as fixed sentences in the data folder (the plain columns and plain_texts.csv), where it can be read and changed. No AI chatbot writes it while you use the app."
+ophiuchus_note,"Ophiuchus has no world-view of its own among Steiner's twelve, so the app reads it as the passage between Scorpio and Sagittarius (an app rule)."

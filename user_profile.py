@@ -70,7 +70,8 @@ def _read_disk():
     if os.path.exists(p):
         with open(p, 'rb') as f:
             av = f.read()
-    return dict(name=d.get('name', ''), avatar=av, birth=_valid_birth(d.get('birth')), home=_valid_home(d.get('home')))
+    return dict(name=d.get('name', ''), avatar=av, birth=_valid_birth(d.get('birth')), home=_valid_home(d.get('home')),
+                life=_valid_life(_read_json('life_chart.json', {})))
 
 
 def _write_disk(prof):
@@ -90,22 +91,27 @@ def get():
         st.session_state[KEY] = _read_disk() if LOCAL else dict(name='', avatar=None, birth=None)
     st.session_state[KEY].setdefault('birth', None)
     st.session_state[KEY].setdefault('home', None)
+    st.session_state[KEY].setdefault('life', {})
     return st.session_state[KEY]
 
 
 def save(name, avatar, birth, home=None):
-    old_home = get().get('home')
-    prof = dict(name=clean_name(name), avatar=avatar, birth=_valid_birth(birth), home=_valid_home(home))
+    old = get()
+    old_home = old.get('home')
+    prof = dict(name=clean_name(name), avatar=avatar, birth=_valid_birth(birth), home=_valid_home(home),
+                life=old.get('life') or {})          # the Biography chart's notes (Astrosophy page) are kept as they are
     st.session_state[KEY] = prof
     if prof['home'] != old_home:
         _reset_place_search()
+    if prof['birth'] and prof['birth'] != old.get('birth'):
+        st.session_state['chart_for'] = MINE          # a new or changed birth: the Astrosophy page shows the user's chart
     if LOCAL:
         _write_disk(prof)
 
 
 def _reset_place_search():
     """Start the place search of every page again from the (new) home place."""
-    for k in ['_place_q'] + [f'{pre}_{w}' for pre in ('c', 'e', 'f') for w in ('q', 'pick', 'elev', 'elev_for', 'elev_src', 'elev_found')]:
+    for k in ['_place_q', 'b_q', 'b_pick'] + [f'{pre}_{w}' for pre in ('c', 'e', 'f') for w in ('q', 'pick', 'elev', 'elev_for', 'elev_src', 'elev_found')]:
         st.session_state.pop(k, None)
 
 
@@ -143,6 +149,72 @@ def add_friend(f):
 def remove_friend(fid):
     st.session_state[FKEY] = [x for x in friends() if x['id'] != fid]
     _store_friends()
+
+
+# ---------------------------------------------------------------- the Astrosophy Birth Chart page (astrosophy_page.py)
+# "Whose chart?" on that page, and the notes of its Biography chart: {'1'..'84': {aspect key: text}}. The notes are
+# kept like the rest of the profile: on the computer in the profile folder (life_chart.json); online only while the
+# app is open, unless "Remember me on this device" is ticked. They never go into a friend card.
+MINE, OTHER = 'My birth chart', 'Another birth or moment'
+LIFE_ASPECTS = (('destiny', 'Destiny & health'), ('interests', 'Interests & studies'), ('people', 'People & family'),
+                ('places', 'Places & work'))
+MAX_NOTE = 600
+
+
+def has_birth():
+    return bool(get().get('birth'))
+
+
+def _valid_life(d):
+    """Biography-chart notes: {'1'..'84': {aspect key: text}}, empty boxes and years left out."""
+    out = {}
+    if not isinstance(d, dict):
+        return out
+    keys = [k for k, _ in LIFE_ASPECTS]
+    for y, boxes in list(d.items())[:200]:
+        try:
+            year = int(y)
+        except (TypeError, ValueError):
+            continue
+        if not (1 <= year <= 84) or not isinstance(boxes, dict):
+            continue
+        clean = {}
+        for k in keys:
+            t = boxes.get(k)
+            if t is None or (isinstance(t, float) and t != t):
+                continue
+            t = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', str(t)).strip()[:MAX_NOTE]
+            if t:
+                clean[k] = t
+        if clean:
+            out[str(year)] = clean
+    return out
+
+
+def life_notes():
+    return get().get('life') or {}
+
+
+def save_life(notes):
+    """Replace all the Biography chart's notes (on the computer: profile/life_chart.json)."""
+    get()['life'] = _valid_life(notes)
+    if LOCAL:
+        _write_json('life_chart.json', get()['life'])
+
+
+def save_life_year(year, boxes):
+    notes = dict(life_notes())
+    notes[str(int(year))] = boxes
+    save_life(notes)
+
+
+def life_storage_text():
+    if LOCAL:
+        return 'Your notes are saved on this computer, in the app\'s "profile" folder, and never leave it.'
+    if remembered():
+        return 'Your notes are kept in this browser on this device (Remember me is on), and nowhere else.'
+    return ('Online, your notes are kept only while the app is open. To keep them, tick "Remember me on this device" '
+            'in your profile, or use "Download my notes" and load the file again next time.')
 
 
 # ---------------------------------------------------------------- "Remember me on this device" (online only)
@@ -217,6 +289,7 @@ def device_payload():
     p = get()
     return json.dumps({'format': DEVICE_FORMAT, 'version': 1,
                        'profile': {'name': p['name'], 'birth': p['birth'], 'home': p.get('home'),
+                                   'life': p.get('life') or {},
                                    'picture_jpeg_base64': _jpeg_b64(p['avatar'])},
                        'friends': [{'id': f['id'], 'name': f['name'], 'birth': f['birth'],
                                     'picture_jpeg_base64': _jpeg_b64(f['avatar'])} for f in friends()]},
@@ -233,7 +306,8 @@ def parse_device(text):
             return None
         p = d.get('profile') or {}
         prof = dict(name=clean_name(p.get('name')), avatar=_picture_from_store(p.get('picture_jpeg_base64')),
-                    birth=_valid_birth(p.get('birth')), home=_valid_home(p.get('home')))
+                    birth=_valid_birth(p.get('birth')), home=_valid_home(p.get('home')),
+                    life=_valid_life(p.get('life')))
         fl = []
         for x in (d.get('friends') or [])[:200]:
             try:
@@ -278,6 +352,8 @@ def _apply_loaded(prof, fl):
     if cur['name'] or cur['avatar'] or cur['birth']:
         return                                           # the visitor already typed a profile: keep that
     ss[KEY] = prof
+    if prof.get('birth'):
+        ss['chart_for'] = MINE
     if prof.get('home'):
         _reset_place_search()
         if ss.get('c_now_tz') != prof['home'].get('tz'):
